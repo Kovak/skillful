@@ -1,0 +1,21 @@
+[
+{
+  "modid" : "skillful",
+  "name" : "skillful",
+  "version" : "${version}",
+  "url" : "http://mc.asrex.net/mods/skillful/",
+  "credits" : "",
+  "authors": [
+    "asrex"
+  ],
+  "description": "An extensible skill and perk system.",
+  "logoFile" : "",
+  "updateUrl" : "",
+  "parent" : "",
+  "screenshots": [
+  ],
+  "dependancies": [
+    "Forge"
+  ]
+}
+]
