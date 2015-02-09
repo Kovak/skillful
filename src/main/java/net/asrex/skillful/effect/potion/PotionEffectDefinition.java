@@ -11,7 +11,7 @@ import net.minecraft.potion.Potion;
  * (e.g. 'potion.jump') which will be resolved to an id at runtime.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class PotionEffectDefinition extends EffectDefinition {
 	
 	private int id = -1;

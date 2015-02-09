@@ -1,8 +1,12 @@
 package net.asrex.skillful.ui;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.asrex.skillful.event.SkillfulClientPerkActivateErrorEvent;
 import net.asrex.skillful.event.SkillfulLevelUpEvent;
 import net.asrex.skillful.event.SkillfulPerkPurchaseEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
@@ -29,7 +33,29 @@ public class ChatEventDisplay {
 	
 	@SubscribeEvent
 	public void onPerkPurchased(SkillfulPerkPurchaseEvent event) {
+		// server only
+		if (event.entityPlayer.worldObj.isRemote) {
+			return;
+		}
 		
+		// TODO: event on manual purchase
+		event.entityPlayer.addChatMessage(new ChatComponentText(String.format(
+				"Perk added: [%s%s%s]!",
+				EnumChatFormatting.AQUA,
+				event.getPerk().getName(),
+				EnumChatFormatting.RESET)));
+	}
+	
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onPerkActivateError(SkillfulClientPerkActivateErrorEvent e) {
+		Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(
+				String.format(
+						"Could not activate perk [%s%s%s]: %s",
+						EnumChatFormatting.AQUA,
+						e.getPerk(),
+						EnumChatFormatting.RESET,
+						e.getMessage())));
 	}
 	
 }

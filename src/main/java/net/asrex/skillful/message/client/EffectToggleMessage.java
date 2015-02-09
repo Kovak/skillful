@@ -1,4 +1,4 @@
-package net.asrex.skillful.message;
+package net.asrex.skillful.message.client;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;

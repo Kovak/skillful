@@ -20,6 +20,7 @@ import net.asrex.skillful.perk.PerkDefinition;
 import net.asrex.skillful.skill.Skill;
 import net.asrex.skillful.skill.SkillDefinition;
 import net.asrex.skillful.skill.SkillRegistry;
+import net.asrex.skillful.ui.PerkUIData;
 import net.asrex.skillful.util.TextUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -49,6 +50,8 @@ public class PlayerSkillInfo  {
 	private final Map<String, Perk> perks;
 	private List<Effect> activeEffects;
 	
+	private final Map<String, PerkUIData> uiData;
+	
 	public PlayerSkillInfo(EntityPlayer player) {
 		this.player = player;
 		
@@ -56,6 +59,7 @@ public class PlayerSkillInfo  {
 		perks = new LinkedHashMap<>();
 		
 		activeEffects = new LinkedList<>();
+		uiData = new LinkedHashMap<>();
 	}
 	
 	public Collection<Skill> getSkills() {
@@ -171,8 +175,6 @@ public class PlayerSkillInfo  {
 	
 	public void removePerk(String perkType) {
 		perks.remove(perkType);
-		
-		// TODO: notify? remove active effects?
 	}
 	
 	public void removePerk(Perk perk) {
@@ -189,8 +191,6 @@ public class PlayerSkillInfo  {
 	
 	public void addPerk(Perk perk) {
 		perks.put(perk.getName(), perk);
-		
-		// TODO: notify?
 	}
 	
 	/**
@@ -242,15 +242,47 @@ public class PlayerSkillInfo  {
 		if (p == null) {
 			p = Perk.fromNBT(tag);
 			if (p != null) {
-				perks.put(p.getName(), p); // TODO: notify?
+				perks.put(p.getName(), p);
 			} else {
 				log.warn("Perk could not be updated from NBT: {}", tag);
 			}
 		} else {
-			p.readNBT(tag); // TODO: notify?
+			p.readNBT(tag);
 		}
 		
 		return p;
+	}
+
+	public Collection<PerkUIData> getPerkUIData() {
+		return uiData.values();
+	}
+	
+	public PerkUIData getPerkUIData(String name) {
+		return uiData.get(name);
+	}
+	
+	public void addPerkUIData(PerkUIData data) {
+		uiData.put(data.getName(), data);
+	}
+	
+	public void removePerkUIData(String name) {
+		uiData.remove(name);
+	}
+	
+	private PerkUIData updatePerkUIData(NBTTagCompound tag) {
+		PerkUIData data = uiData.get(tag.getString("name"));
+		if (data == null) {
+			data = PerkUIData.fromNBT(tag);
+			if (data != null) {
+				uiData.put(data.getName(), data);
+			} else {
+				log.warn("UI data could not be loaded from NBT: {}", tag);
+			}
+		} else {
+			data.readNBT(tag);
+		}
+		
+		return data;
 	}
 	
 	public List<Effect> getActiveEffects() {
@@ -275,6 +307,22 @@ public class PlayerSkillInfo  {
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * Determines if the player has any active effects for the given perk.
+	 * @param perkName the perk to search for
+	 * @return true if at least one effect of the given perk is active, false
+	 *     otherwise
+	 */
+	public boolean hasActiveEffects(String perkName) {
+		for (Effect e : activeEffects) {
+			if (e.getPerkName().equals(perkName)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -491,6 +539,22 @@ public class PlayerSkillInfo  {
 			perks.remove(perk);
 		}
 		
+		// update ui bars and find old entries to prune
+		Set<String> oldData = new HashSet<>(uiData.keySet());
+		NBTTagList dataList = tag.getTagList(
+				"uiData", Constants.NBT.TAG_COMPOUND);
+		for (int i = 0; i < dataList.tagCount(); i++) {
+			PerkUIData data = updatePerkUIData(dataList.getCompoundTagAt(i));
+			if (data != null) {
+				oldData.remove(data.getName());
+			}
+		}
+		
+		// prune
+		for (String dataName : oldData) {
+			uiData.remove(dataName);
+		}
+		
 		// unlike skills and perks, effect pruning works a bit in reverse
 		// (and given that it isn't a set, we don't want to do n^2 operations
 		// for removals)
@@ -535,6 +599,14 @@ public class PlayerSkillInfo  {
 			perksList.appendTag(perkTag);
 		}
 		tag.setTag("perks", perksList);
+		
+		NBTTagList dataList = new NBTTagList();
+		for (PerkUIData data : uiData.values()) {
+			NBTTagCompound dataTag = new NBTTagCompound();
+			data.writeNBT(dataTag);
+			dataList.appendTag(dataTag);
+		}
+		tag.setTag("uiData", dataList);
 		
 		NBTTagList activeEffectsList = new NBTTagList();
 		for (Effect e : activeEffects) {

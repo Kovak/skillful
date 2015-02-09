@@ -5,10 +5,13 @@ import net.asrex.skillful.effect.AbilityDefinition;
 import net.asrex.skillful.effect.Effect;
 import net.asrex.skillful.effect.EffectDefinition;
 import net.asrex.skillful.event.SkillfulEffectToggledEvent;
-import net.asrex.skillful.message.EffectToggleMessage;
-import net.asrex.skillful.message.SkillInfoMessage;
+import net.asrex.skillful.exception.EffectActivationException;
+import net.asrex.skillful.exception.PerkActivationException;
+import net.asrex.skillful.message.client.EffectToggleMessage;
+import net.asrex.skillful.message.client.SkillInfoMessage;
 import net.asrex.skillful.perk.Perk;
 import net.asrex.skillful.perk.PerkRegistry;
+import net.asrex.skillful.ui.PerkUIData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -36,6 +39,7 @@ public class PlayerNetworkHelper {
 	 * via a {@link SkillInfoMessage}.
 	 * <p>Note that this method may only be called from a server context.</p>
 	 * @param player the player to update
+	 * @throws IllegalStateException if called from a client context
 	 */
 	public static void updateSkillInfo(EntityPlayer player) {
 		if (player.worldObj.isRemote) {
@@ -68,6 +72,11 @@ public class PlayerNetworkHelper {
 	 *     identify the effect in the {@link PerkRegistry})
 	 * @param effectName the name of the effect
 	 * @param state if true enable the effect; if false, disable it
+	 * @throws IllegalStateException if called from a client context
+	 * @throws EffectActivationException if the player does not have a matching
+	 *     perk-effect pair, if attempting to disable an
+	 *     {@link AbilityDefinition}, or if the effect does not exist in the
+	 *     player's active effects
 	 */
 	public static void toggleEffect(
 			EntityPlayer player, String perkName, String effectName,
@@ -81,7 +90,7 @@ public class PlayerNetworkHelper {
 		
 		EffectDefinition eDef = info.getEffectDefinition(perkName, effectName);
 		if (eDef == null) {
-			throw new IllegalArgumentException(String.format(
+			throw new EffectActivationException(String.format(
 					"The effect [%s,%s] could not be found on the player: %s",
 					perkName,
 					effectName,
@@ -91,7 +100,7 @@ public class PlayerNetworkHelper {
 		Effect e;
 		if (eDef instanceof AbilityDefinition) {
 			if (!state) {
-				throw new IllegalArgumentException(String.format(
+				throw new EffectActivationException(String.format(
 						"Ability [%s,%s] can only be enabled, not disabled",
 						perkName,
 						effectName));
@@ -102,15 +111,13 @@ public class PlayerNetworkHelper {
 		} else {
 			e = info.getActiveEffect(perkName, effectName);
 			if (e == null) {
-				throw new IllegalArgumentException(String.format(
+				throw new EffectActivationException(String.format(
 						"The effect [%s, %s] is not active on player: %s",
 						perkName,
 						effectName,
 						player.toString()));
 			}
 		}
-		
-		System.out.println("=== toggling " + state + " for player: " + player);
 		
 		// toggle on the server
 		e.toggle(state);
@@ -167,9 +174,9 @@ public class PlayerNetworkHelper {
 	 * activate on the client.
 	 * <p>If no matching effect can be found (as determined by the unique
 	 * {@code perkName} and {@code effectName} combination), an
-	 * {@link IllegalArgumentException} will be thrown. Similarly, if an
+	 * {@link EffectActivationException} will be thrown. Similarly, if an
 	 * equivalent effect is already active on the player (enabled or not), an
-	 * {@code IllegalArgumentException} will also be thrown.</p>
+	 * {@code EffectActivationException} will also be thrown.</p>
 	 * <p>Note that this method may only be called from a server context.</p>
 	 * @see #updateSkillInfo(EntityPlayer) 
 	 * @see #toggleEffect(EntityPlayer, String, String, boolean) 
@@ -177,7 +184,7 @@ public class PlayerNetworkHelper {
 	 * @param perkName the name of the effect's parent perk (to uniquely
 	 *     identify the effect in the {@link PerkRegistry})
 	 * @param effectName the name of the effect
-	 * @throws IllegalArgumentException if a matching effect is already active
+	 * @throws EffectActivationException if a matching effect is already active
 	 *     on the player, or if no matching effect can be found
 	 */
 	public static void addAndActivateEffect(
@@ -190,7 +197,7 @@ public class PlayerNetworkHelper {
 		
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 		if (info.getActiveEffect(perkName, effectName) != null) {
-			throw new IllegalArgumentException(String.format(
+			throw new EffectActivationException(String.format(
 					"The effect [%s, %s] is already active on player: %s",
 					perkName,
 					effectName,
@@ -199,7 +206,7 @@ public class PlayerNetworkHelper {
 		
 		Effect effect = PerkRegistry.createEffect(player, perkName, effectName);
 		if (effect == null) {
-			throw new IllegalArgumentException(String.format(
+			throw new EffectActivationException(String.format(
 					"The effect [%s, %s] could not be found",
 					perkName,
 					effectName));
@@ -228,7 +235,7 @@ public class PlayerNetworkHelper {
 	 * @param player the player on which to apply the effect
 	 * @param effect the effect to apply
 	 * @throws IllegalStateException if called from a client context
-	 * @throws IllegalArgumentException if a matching effect is already active
+	 * @throws EffectActivationException if a matching effect is already active
 	 *     on the player
 	 */
 	public static void addAndActivateEffect(EntityPlayer player, Effect effect) {
@@ -242,7 +249,7 @@ public class PlayerNetworkHelper {
 		Effect dup = info.getActiveEffect(
 				effect.getPerkName(), effect.getEffectName());
 		if (dup != null) {
-			throw new IllegalArgumentException(String.format(
+			throw new EffectActivationException(String.format(
 					"The effect %s is already active on player: %s",
 					dup.toString(),
 					player.toString()));
@@ -267,7 +274,7 @@ public class PlayerNetworkHelper {
 	 *     identify the effect in the {@link PerkRegistry})
 	 * @param effectName the name of the effect
 	 * @throws IllegalStateException if called from a client context
-	 * @throws IllegalArgumentException if no matching active effect exists on
+	 * @throws EffectActivationException if no matching active effect exists on
 	 *     the player
 	 */
 	public static void removeAndDeactivateEffect(
@@ -280,7 +287,7 @@ public class PlayerNetworkHelper {
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 		Effect effect = info.getActiveEffect(perkName, effectName);
 		if (effect == null) {
-			throw new IllegalArgumentException(String.format(
+			throw new EffectActivationException(String.format(
 					"Cannot remove effect [%s,%s] not active on player: %s",
 					perkName,
 					effectName,
@@ -290,8 +297,6 @@ public class PlayerNetworkHelper {
 		toggleEffect(player, effect, false);
 		
 		info.removeActiveEffect(effect);
-		
-		System.out.println("=== effect removed, new PSI: " + info);
 		
 		updateSkillInfo(player);
 	}
@@ -305,7 +310,7 @@ public class PlayerNetworkHelper {
 	 * @param player the player from which to remove the effect
 	 * @param effect the effect to remove from the player
 	 * @throws IllegalStateException if called from a client context
-	 * @throws IllegalArgumentException if no matching active effect exists on
+	 * @throws EffectActivationException if no matching active effect exists on
 	 *     the player
 	 */
 	public static void removeAndDeactivateEffect(
@@ -320,13 +325,18 @@ public class PlayerNetworkHelper {
 	/**
 	 * Toggles all effects of the given perk on both the client and the server.
 	 * Effects that are currently in the given state will not be affected; that
-	 * is, active effects will remain activate (and will not be re-activated)
-	 * if {@code state} is true
+	 * is, active effects will remain activated (and will not be re-activated)
+	 * if {@code state} is true.
+	 * <p>Note that this method explicitly <i>does not</i> check additional perk
+	 * conditions, such as activatable flags or cooldowns, as it is intended as
+	 * an internal service method. See {@link #activatePerk(EntityPlayer, Perk)}
+	 * and {@link #deactivatePerk(EntityPlayer, Perk)} for methods that check
+	 * the appropriate requirements for normal player use.</p>
 	 * @param player the player to toggle the perk on
 	 * @param perk the perk to toggle
 	 * @param state the new state for all effects of the perk
 	 * @throws IllegalStateException if called from a client context
-	 * @throws IllegalArgumentException if the player doesn't have the given
+	 * @throws PerkActivationException if the player doesn't have the given
 	 *     perk
 	 */
 	public static void togglePerk(
@@ -339,13 +349,16 @@ public class PlayerNetworkHelper {
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 		
 		if (!info.hasPerk(perk.getName())) {
-			throw new IllegalArgumentException(
+			throw new PerkActivationException(
 					"Player does not have perk to toggle: " + perk);
 		}
 		
 		String perkName = perk.getName();
 		for (EffectDefinition def : perk.getDefinition().getEffects()) {
 			String effectName = def.getName();
+			
+			// TODO: inefficient - we send 2 messages (skill info + effect
+			//       toggle per effect - could just send 2 specialized messages?
 			
 			if (state && !info.hasActiveEffect(perkName, effectName)) {
 				addAndActivateEffect(player, perkName, effectName);
@@ -365,7 +378,7 @@ public class PlayerNetworkHelper {
 	 * @param player the player to activate the perk on
 	 * @param perk the perk to add and activate
 	 * @throws IllegalStateException if called from a client context
-	 * @throws IllegalArgumentException if the player already has the given perk
+	 * @throws PerkActivationException if the player already has the given perk
 	 */
 	public static void addAndActivatePerk(EntityPlayer player, Perk perk) {
 		if (player.worldObj.isRemote) {
@@ -376,7 +389,7 @@ public class PlayerNetworkHelper {
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 		
 		if (info.hasPerk(perk.getName())) {
-			throw new IllegalArgumentException(
+			throw new PerkActivationException(
 					"Player already has perk: " + perk.getName());
 		}
 		
@@ -384,6 +397,8 @@ public class PlayerNetworkHelper {
 		
 		// don't need to update skill info here - togglePerk will send an update
 		//updateSkillInfo(player);
+		
+		// TODO: add to UI automatically?
 		
 		togglePerk(player, perk, true);
 	}
@@ -396,6 +411,8 @@ public class PlayerNetworkHelper {
 	 * the caller will apply any relevant additional changes.</p>
 	 * @param player the player to deactivate and remove the perk from
 	 * @param perk the perk to deactivate and remove
+	 * @throws IllegalStateException if called from a client context
+	 * @throws PerkActivationException if the perk is missing from the player
 	 */
 	public static void removeAndDeactivatePerk(EntityPlayer player, Perk perk) {
 		if (player.worldObj.isRemote) {
@@ -406,14 +423,93 @@ public class PlayerNetworkHelper {
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 		
 		if (!info.hasPerk(perk.getName())) {
-			throw new IllegalArgumentException(
+			throw new PerkActivationException(
 					"Player does not have perk to remove: " + perk.getName());
 		}
 		
+		// disable it
 		togglePerk(player, perk, false);
 		
 		info.removePerk(perk);
+		
+		// remove it from any UI
+		for (PerkUIData data : info.getPerkUIData()) {
+			data.removePerk(perk.getName());
+		}
+		
 		updateSkillInfo(player);
+	}
+	
+	/**
+	 * Activates the given perk (and all of its associated effects) on the
+	 * player, checking that the player meets all necessary requirements to use
+	 * it, including any relevant cooldown timers and activation flags.
+	 * 
+	 * <p>Note that this method is intended to be used following a
+	 * manually-attempted perk activation and makes checks appropriately.</p>
+	 * @param player the player on which to activate the perk
+	 * @param perk the perk to activate
+	 * @throws IllegalStateException when called from a client context
+	 * @throws PerkActivationException if the player does not have the given
+	 *     perk, if the perk cannot be activated manually, or if the perk's
+	 *     cooldown has not finished.
+	 */
+	public static void activatePerk(EntityPlayer player, Perk perk) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
+		
+		if (!info.hasPerk(perk.getName())) {
+			throw new PerkActivationException("Perk not found on player");
+		}
+		
+		if (!perk.getDefinition().isActivatable()) {
+			throw new PerkActivationException(
+					"Perk may not be activated manually.");
+		}
+		
+		if (!perk.canActivate(player.ticksExisted)) {
+			throw new PerkActivationException(String.format(
+					"Cooldown has not finished; %.1f seconds remain",
+					perk.getCooldownTimeRemaining(player.ticksExisted)));
+		}
+		
+		togglePerk(player, perk, true);
+	}
+	
+	/**
+	 * Deactivated the given perk (and all of its associated effects) for the
+	 * given player, checking that all necessary requirements are met. In
+	 * particular, the perk must be flagged as {@code cancellable}.
+	 * 
+	 * <p>Note that his method is suitable for use following a
+	 * manually-attempted perk deactivation and makes checks appropriately.</p>
+	 * @param player the player on which to attempt perk deactivation
+	 * @param perk the perk to deactivate
+	 * @throws IllegalStateException if called from a client context
+	 * @throws PerkActivationException if the player does not have the given
+	 *     perk, or if the perk cannot be cancelled manually
+	 */
+	public static void deactivatePerk(EntityPlayer player, Perk perk) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
+		if (!info.hasPerk(perk.getName())) {
+			throw new PerkActivationException("Perk not found on player");
+		}
+		
+		if (!perk.getDefinition().isCancelable()) {
+			throw new PerkActivationException(
+					"Perk may not be cancelled manually");
+		}
+		
+		togglePerk(player, perk, false);
 	}
 	
 }

@@ -168,7 +168,7 @@ public class SkillRegistry {
 	
 	/**
 	 * Registers a level scaling strategy implementation with the given name.
-	 * Names should be all alower-case and consist only of letters a-z and
+	 * Names should be all lower-case and consist only of letters a-z and
 	 * underscores ('_').
 	 * 
 	 * <p>Scaling strategies are used to determine the amount of experience

@@ -75,6 +75,12 @@ public class PerkDefinition {
 	 */
 	private int cooldownTicks = -1;
 	
+	/**
+	 * The path to the texture for this perk as defined in the
+	 * {@link TextureRegistry} via {@code textures.yml}.
+	 */
+	private String texture = null;
+	
 	public PerkDefinition() {
 		effects = new LinkedList<>();
 		

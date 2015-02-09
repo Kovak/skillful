@@ -11,17 +11,23 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import java.io.File;
 import java.io.IOException;
 import lombok.extern.log4j.Log4j2;
 import net.asrex.skillful.command.PerkCommand;
 import net.asrex.skillful.command.PerkEffectCommand;
+import net.asrex.skillful.command.PerkUICommand;
 import net.asrex.skillful.command.SkillCommand;
 import net.asrex.skillful.effect.Effect;
-import net.asrex.skillful.message.EffectToggleHandler;
-import net.asrex.skillful.message.EffectToggleMessage;
-import net.asrex.skillful.message.SkillInfoHandler;
-import net.asrex.skillful.message.SkillInfoMessage;
+import net.asrex.skillful.message.client.EffectToggleHandler;
+import net.asrex.skillful.message.client.EffectToggleMessage;
+import net.asrex.skillful.message.client.PerkActivateErrorHandler;
+import net.asrex.skillful.message.client.PerkActivateErrorMessage;
+import net.asrex.skillful.message.client.SkillInfoHandler;
+import net.asrex.skillful.message.client.SkillInfoMessage;
+import net.asrex.skillful.message.server.PerkActivateHandler;
+import net.asrex.skillful.message.server.PerkActivateMessage;
 import net.asrex.skillful.perk.PerkRegistry;
 import net.asrex.skillful.seed.BlockSeed;
 import net.asrex.skillful.seed.CombatSeed;
@@ -29,6 +35,9 @@ import net.asrex.skillful.seed.CraftingSeed;
 import net.asrex.skillful.seed.DeathSeed;
 import net.asrex.skillful.skill.SkillRegistry;
 import net.asrex.skillful.ui.ChatEventDisplay;
+import net.asrex.skillful.ui.PerkUIManager;
+import net.asrex.skillful.ui.PerkUIRegistry;
+import net.asrex.skillful.ui.TextureRegistry;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -65,6 +74,7 @@ public class SkillfulMod {
 		
 		// forge events
 		MinecraftForge.EVENT_BUS.register(new ChatEventDisplay());
+		MinecraftForge.EVENT_BUS.register(new PerkUIManager());
 		MinecraftForge.EVENT_BUS.register(new BlockSeed());
 		MinecraftForge.EVENT_BUS.register(new DeathSeed());
 		MinecraftForge.EVENT_BUS.register(new CombatSeed());
@@ -73,7 +83,7 @@ public class SkillfulMod {
 		FMLCommonHandler.instance().bus().register(new PlayerSkillManager());
 		FMLCommonHandler.instance().bus().register(new CraftingSeed());
 		
-		// messages
+		// messages: server -> client
 		CHANNEL.registerMessage(
 				SkillInfoHandler.class,
 				SkillInfoMessage.class,
@@ -82,6 +92,16 @@ public class SkillfulMod {
 				EffectToggleHandler.class,
 				EffectToggleMessage.class,
 				1, Side.CLIENT);
+		CHANNEL.registerMessage(
+				PerkActivateErrorHandler.class,
+				PerkActivateErrorMessage.class,
+				2, Side.CLIENT);
+		
+		// messages: client -> server
+		CHANNEL.registerMessage(
+				PerkActivateHandler.class,
+				PerkActivateMessage.class,
+				3, Side.SERVER);
 	}
 	
 	@EventHandler
@@ -97,6 +117,22 @@ public class SkillfulMod {
 		} catch (IOException ex) {
 			log.error("Could not read perks.yml", ex);
 		}
+		
+		try {
+			PerkUIRegistry.init(configDir);
+		} catch (IOException ex) {
+			log.error("Could not read ui.yml", ex);
+		}
+	}
+	
+	@EventHandler
+	@SideOnly(Side.CLIENT)
+	public void postInitClient(FMLPostInitializationEvent event) {
+		try {
+			TextureRegistry.init(configDir);
+		} catch (IOException ex) {
+			log.error("Could not read textures.yml", ex);
+		}
 	}
 	
 	@EventHandler
@@ -106,6 +142,7 @@ public class SkillfulMod {
 		event.registerServerCommand(new SkillCommand());
 		event.registerServerCommand(new PerkCommand());
 		event.registerServerCommand(new PerkEffectCommand());
+		event.registerServerCommand(new PerkUICommand());
 	}
 	
 	@EventHandler

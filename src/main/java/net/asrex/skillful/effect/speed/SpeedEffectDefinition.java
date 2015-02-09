@@ -9,7 +9,7 @@ import net.asrex.skillful.effect.EffectDefinition;
  * Constructs instances of {@link SpeedEffect}.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class SpeedEffectDefinition extends EffectDefinition {
 	
 	private double modifier;

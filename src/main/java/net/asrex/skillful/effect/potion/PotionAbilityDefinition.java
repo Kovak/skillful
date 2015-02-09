@@ -10,7 +10,7 @@ import net.minecraft.potion.Potion;
  * Defines a {@link PotionAbility}.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class PotionAbilityDefinition extends AbilityDefinition {
 
 	private int id = -1;

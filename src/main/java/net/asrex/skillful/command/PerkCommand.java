@@ -6,22 +6,17 @@ import java.util.LinkedList;
 import java.util.List;
 import net.asrex.skillful.PlayerNetworkHelper;
 import net.asrex.skillful.PlayerSkillInfo;
+import static net.asrex.skillful.command.ChatComponentHelper.*;
 import net.asrex.skillful.perk.Perk;
 import net.asrex.skillful.perk.PerkDefinition;
 import net.asrex.skillful.perk.PerkRegistry;
 import net.asrex.skillful.perk.cost.PerkCost;
-import net.asrex.skillful.requirement.PerkRequirement;
 import net.asrex.skillful.requirement.Requirement;
-import net.asrex.skillful.util.TextUtil;
 import static net.asrex.skillful.util.TextUtil.slugify;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
 import static net.minecraft.util.EnumChatFormatting.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -52,7 +47,7 @@ public class PerkCommand extends CommandBase {
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
 		return String.format(
-				"/perk <show|show-all|buy|refund> [%sperk-slug%s]",
+				"/perk <show|show-all|buy|refund|help> [%sperk-slug%s]",
 				LIGHT_PURPLE,
 				RESET);
 	}
@@ -64,14 +59,9 @@ public class PerkCommand extends CommandBase {
 			return;
 		}
 		
-		//for (EnumChatFormatting f : EnumChatFormatting.values()) {
-		//	send(sender, f.name());
-		//	send(sender, generateLine(40, f));
-		//}
-		
 		EntityPlayer player = (EntityPlayer) sender;
 		
-		send(sender, generateLine(40, DARK_GRAY));
+		send(sender, generateLine());
 		
 		if (args.length == 1) {
 			String action = args[0].toLowerCase();
@@ -98,7 +88,7 @@ public class PerkCommand extends CommandBase {
 			send(sender, getCommandUsage(sender));
 		}
 		
-		send(sender, generateLine(40, DARK_GRAY));
+		send(sender, generateLine());
 	}
 	
 	@Override
@@ -426,9 +416,12 @@ public class PerkCommand extends CommandBase {
 	private void showHelp(EntityPlayer player) {
 		send(player, "Usage: " + getCommandUsage(player));
 		send(player, "/perk show: show perks for purchase (requirements met)");
-		send(player, "/perk show <perk-slug>: show detailed info about named perk");
-		send(player, "/perk show-all: show all perks, even those with unmet requirements");
-		send(player, "/perk buy: show perks for purchase (affordable, requirements met)");
+		send(player, "/perk show <perk-slug>: show detailed info about named "
+				+ "perk");
+		send(player, "/perk show-all: show all perks, even those with unmet "
+				+ "requirements");
+		send(player, "/perk buy: show perks for purchase (affordable, "
+				+ "requirements met)");
 		send(player, "/perk buy <perk-slug>: purchase the given perk");
 		send(player, "/perk refund: show perks available to refund");
 		send(player, "/perk refund <perk-slug>: refund the given perk");
@@ -436,173 +429,6 @@ public class PerkCommand extends CommandBase {
 	
 	private void send(ICommandSender target, String message) {
 		target.addChatMessage(new ChatComponentText(message));
-	}
-	
-	private ChatComponentText generateRequirementsHoverText(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		boolean satisfied = def.satisfiesRequirements(player, info);
-		
-		ChatComponentText ret = new ChatComponentText(String.format(
-				"\n%s%sRequirements:%s %s%s%s",
-				GRAY,
-				ITALIC,
-				RESET,
-				satisfied ? GREEN : RED,
-				satisfied ? "met" : "not met",
-				RESET));
-		
-		for (Requirement req : def.getRequirements()) {
-			ret.appendText(String.format(
-					"\n    %s%s%s",
-					req.satisfied(player, info) ? "" : RED,
-					req.describe(),
-					RESET));
-		}
-		
-		return ret;
-	}
-	
-	private ChatComponentText generateCostHoverText(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		boolean canAfford = def.canAfford(player, info);
-		
-		ChatComponentText ret = new ChatComponentText(String.format(
-				"\n%s%sCosts:%s %s%s%s",
-				GRAY,
-				ITALIC,
-				RESET,
-				canAfford ? GREEN : RED,
-				canAfford ? "met" : "not met",
-				RESET));
-		
-		for (PerkCost cost : def.getCosts()) {
-			ret.appendText(String.format(
-					"\n    %s%s%s",
-					cost.canAfford(player, info) ? "" : RED,
-					cost.describe(),
-					RESET));
-		}
-		
-		return ret;
-	}
-	
-	private ChatComponentText generatePerkHoverText(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		
-		ChatComponentText text = new ChatComponentText(String.format(
-				"%s%s%s\n",
-				AQUA,
-				def.getName(),
-				RESET));
-		
-		// type? user string?
-		// with automatic for common configs
-		
-		text.appendSibling(generateRequirementsHoverText(player, info, def));
-		text.appendSibling(generateCostHoverText(player, info, def));
-		
-		if (def.getDescription() != null) {
-			text.appendText(String.format(
-					"\n\n%s%s%s",
-					ITALIC,
-					def.getDescription(), // wrap?
-					RESET));
-		}
-		
-		return text;
-	}
-	
-	private ChatComponentText generatePerkComponent(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		ChatComponentText ret = new ChatComponentText(String.format(
-				"[%s]", def.getName()));
-		
-		ChatStyle style = new ChatStyle();
-		style.setColor(AQUA);
-		style.setChatHoverEvent(new HoverEvent(
-				HoverEvent.Action.SHOW_TEXT,
-				generatePerkHoverText(player, info, def)));
-		ret.setChatStyle(style);
-		
-		return ret;
-	}
-	
-	private ChatComponentText generatePerkBuyHoverText(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		
-		boolean owned = info.hasPerk(def);
-		boolean satisfied = def.satisfiesRequirements(player, info);
-		boolean canAfford = def.canAfford(player, info);
-		
-		EnumChatFormatting color;
-		if (owned) {
-			color = BLUE;
-		} else if (satisfied && canAfford) {
-			color = GREEN;
-		} else if (satisfied && !canAfford) {
-			color = RED;
-		} else {
-			color = DARK_GRAY;
-		}
-		
-		ChatComponentText text = new ChatComponentText(String.format(
-				"%s%s%s\n",
-				color,
-				def.getName(),
-				RESET));
-		
-		text.appendSibling(generateRequirementsHoverText(player, info, def));
-		text.appendSibling(generateCostHoverText(player, info, def));
-		
-		return text;
-	}
-	
-	private ChatComponentText generatePerkBuyComponent(
-			EntityPlayer player, PlayerSkillInfo info, PerkDefinition def) {
-		
-		ChatComponentText ret = new ChatComponentText("[Purchase]");
-		
-		boolean owned = info.hasPerk(def);
-		boolean satisfied = def.satisfiesRequirements(player, info);
-		boolean canAfford = def.canAfford(player, info);
-		
-		ChatStyle style = new ChatStyle();
-		if (owned) {
-			style.setColor(BLUE);
-		} else if (satisfied && canAfford) {
-			style.setColor(GREEN);
-		} else if (satisfied && !canAfford) {
-			style.setColor(RED);
-		} else {
-			style.setColor(DARK_GRAY);
-		}
-		ret.setChatStyle(style);
-		
-		style.setChatHoverEvent(new HoverEvent(
-				HoverEvent.Action.SHOW_TEXT,
-				generatePerkBuyHoverText(player, info, def)));
-		
-		if (!owned && (satisfied && canAfford)) {
-			style.setChatClickEvent(new ClickEvent(
-					ClickEvent.Action.SUGGEST_COMMAND,
-					"/perk buy " + TextUtil.slugify(def.getName())));
-		}
-		
-		return ret;
-	}
-	
-	private String generateLine(int length, EnumChatFormatting color) {
-		StringBuilder s = new StringBuilder();
-		
-		s.append(color.toString());
-		//s.append(BOLD);
-		s.append(STRIKETHROUGH);
-		for (int i = 0; i < length; i++) {
-			s.append("-");
-		}
-		s.append(RESET);
-		
-		return s.toString();
 	}
 	
 }
