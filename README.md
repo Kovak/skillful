@@ -84,3 +84,4 @@ Developer Notes
  * [SnakeYAML](http://code.google.com/p/snakeyaml/) is required to parse
    configuration files. You may download it from
    [Maven Central](http://mvnrepository.com/artifact/org.yaml/snakeyaml/1.14).
+ * The latest JavaDoc can be found at http://skillful.asrex.net/javadoc/latest/
