@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Skillful by timothyb89</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Skillful</h1>
+        <p class="header">A Minecraft Forge mod adding a comprehensive skill and perk system</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/timothyb89/skillful/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/timothyb89/skillful/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/timothyb89/skillful">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/timothyb89">timothyb89</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a id="skillful" class="anchor" href="#skillful" aria-hidden="true"><span class="octicon octicon-link"></span></a>Skillful</h1>
+
+<p>A Minecraft Forge mod adding a comprehensive and highly configurable skill and
+perk system.</p>
+
+<p>The mod is not quite ready for release, but you can watch here for progress!</p>
+
+<h2>
+<a id="roadmap" class="anchor" href="#roadmap" aria-hidden="true"><span class="octicon octicon-link"></span></a>Roadmap</h2>
+
+<p>Skillful aims to <em>comprehensively remedy</em> the lack of a solid role-playing or
+skills mod. More directly, the end goal is to provide the necessary backend for
+all mods to cooperatively create a fantastic role-playing experience by giving
+both developers and users the tools necessary to do so.</p>
+
+<h2>
+<a id="core-features" class="anchor" href="#core-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Core Features</h2>
+
+<h3>
+<a id="configurability" class="anchor" href="#configurability" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configurability</h3>
+
+<p>Skillful has been designed to be <em>insanely configurable</em>, and you don’t need
+any modding experience to enjoy the benefits. Craft and design your skills and
+perks from scratch, and combine in-game events and effects in entirely new ways
+to create a completely unique experience.</p>
+
+<p>Intimidated by all of the options? Don’t worry! Sane defaults are included as
+well. Through the use of <strong>skill and perk packs</strong>, third-party mods can add
+pre-configured sets of skills and perks to provide a great experience with any
+supported mod out of the box, with next to no configuration necessary.</p>
+
+<h3>
+<a id="extensibility" class="anchor" href="#extensibility" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extensibility</h3>
+
+<p>Skillful has been designed from the ground up to be <em>ridiculously extensible</em>.
+Third-party mods are treated as first-class citizens, and are able to add,
+remove, modify, or even replace entirely any piece of added functionality, all
+in a user-configurable way.</p>
+
+<p>On top of this, the entire codebase has been obsessively documented, so if you
+want to tweak something, help is readily available.</p>
+
+<h3>
+<a id="concepts" class="anchor" href="#concepts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Concepts</h3>
+
+<ul>
+<li>Seed: some event that can cause a skill to gain in progress.</li>
+<li>Skill: a metric of progress in some area. Skills are “seeded” by in-game
+events to eventually increase in level.</li>
+<li>Perk: a purchasable collection of one or more effects. Perks may have
+associated requirements and costs.</li>
+<li>Effect: some modification to the player.</li>
+</ul>
+
+<p>In the coming days, expect these terms to be more fully defined on the wiki.</p>
+
+<h2>
+<a id="example-content" class="anchor" href="#example-content" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example Content</h2>
+
+<ul>
+<li>Text UI screenshots: <a href="http://imgur.com/a/nYWSj#0">http://imgur.com/a/nYWSj#0</a>
+</li>
+<li>Sample skill configuration file: <a href="http://pastebin.com/TgQG0qrT">http://pastebin.com/TgQG0qrT</a>
+</li>
+<li>Sample perk configuration file: <a href="http://pastebin.com/YJQjG4SS">http://pastebin.com/YJQjG4SS</a>
+</li>
+</ul>
+
+<h2>
+<a id="licensing-and-modpack-use" class="anchor" href="#licensing-and-modpack-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>Licensing and Modpack Use</h2>
+
+<p>Code for the mod itself falls under the
+<a href="http://opensource.org/licenses/MIT">MIT license</a> and can be freely used,
+modified, and distributed for essentially any purpose.</p>
+
+<p>Additionally, you may freely redistribute this mod without needing to request
+permission of any sort (including for use in mod packs). That said, we'd love to
+hear from you if you make creative use of it!</p>
+
+<p>That said, if you do chose to make use of Skillful from within your own mod,
+please <em>do not</em> include Skillful code directly in your own mod’s jar, and try
+to avoid redistributing the jar itself if possible, as doing so may cause
+version and classloading conflicts. Please point your users to the relevant
+release on the <a href="https://github.com/timothyb89/skillful/releases">Releases page</a>
+here on Github whenever possible, thanks!</p>
+
+<h1>
+<a id="developer-notes" class="anchor" href="#developer-notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Developer Notes</h1>
+
+<ul>
+<li>The project makes extensive use of
+<a href="http://projectlombok.org/">Lombok annotations</a>. If you need to depend on
+Skillful, you do <strong>not</strong> need to include Lombok.</li>
+<li>
+<a href="http://code.google.com/p/snakeyaml/">SnakeYAML</a> is required to parse
+configuration files. You may download it from
+<a href="http://mvnrepository.com/artifact/org.yaml/snakeyaml/1.14">Maven Central</a>.</li>
+</ul>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
