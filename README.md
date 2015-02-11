@@ -36,7 +36,7 @@ Third-party mods are treated as first-class citizens, and are able to add,
 remove, modify, or even replace entirely any piece of added functionality, all
 in a user-configurable way.
 
-On top of this, the entire codebase has been obsessively documented, so if you
+On top of this, the entire codebase has been [obsessively documented](http://skillful.asrex.net/javadoc/latest/), so if you
 want to tweak something, help is readily available.
 
 ### Concepts
@@ -50,13 +50,6 @@ want to tweak something, help is readily available.
 
 In the coming days, expect these terms to be more fully defined on the wiki.
 
-Example Content
----------------
-
- * Text UI screenshots: http://imgur.com/a/nYWSj#0
- * Sample skill configuration file: http://pastebin.com/TgQG0qrT
- * Sample perk configuration file: http://pastebin.com/YJQjG4SS
-
 Licensing and Modpack Use
 -------------------------
 
@@ -65,7 +58,7 @@ Code for the mod itself falls under the
 modified, and distributed for essentially any purpose.
 
 Additionally, you may freely redistribute this mod without needing to request
-permission of any sort (including for use in mod packs). That said, we'd love to
+permission of any sort (including for use in mod packs). We'd love to
 hear from you if you make creative use of it!
 
 That said, if you do chose to make use of Skillful from within your own mod,
