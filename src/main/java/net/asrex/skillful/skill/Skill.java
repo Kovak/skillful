@@ -1,13 +1,12 @@
 package net.asrex.skillful.skill;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
+import net.asrex.skillful.exception.SkillfulException;
 import net.asrex.skillful.perk.Perk;
-import net.asrex.skillful.util.Log;
 import net.minecraft.nbt.NBTTagCompound;
 
 /**
@@ -24,10 +23,9 @@ import net.minecraft.nbt.NBTTagCompound;
  * user-configurable objects that control data such as events that seed the
  * skill and the level scaling method.</p>
  */
+@Log4j2
 @ToString
 public class Skill {
-
-	private static final Logger log = Log.get(Skill.class);
 	
 	@Getter private int level;
 	
@@ -147,6 +145,11 @@ public class Skill {
 	 */
 	public void readNBT(NBTTagCompound tag) {
 		definition = SkillRegistry.getDefinition(tag.getString("name"));
+		if (definition == null) {
+			throw new SkillfulException("Missing skill definition: "
+					+ tag.getString("name"));
+		}
+		
 		level = tag.getInteger("level");
 		progress = tag.getInteger("progress");
 		maxProgress = tag.getInteger("maxProgress");
@@ -208,13 +211,16 @@ public class Skill {
 			
 			return skill;
 		} catch (ClassNotFoundException ex) {
-			log.log(Level.SEVERE, "Could not load skill class: " + clazz, ex);
+			log.error("Could not load skill class: " + clazz, ex);
 			return null;
 		} catch (ClassCastException ex) {
-			log.log(Level.SEVERE, "Invalid skill class: " + clazz, ex);
+			log.error("Invalid skill class: " + clazz, ex);
 			return null;
 		} catch (ReflectiveOperationException ex) {
-			log.log(Level.SEVERE, "Could not instantiate skill: " + clazz, ex);
+			log.error("Could not instantiate skill: " + clazz, ex);
+			return null;
+		} catch (SkillfulException ex) {
+			log.error("Could not read skill from NBT: " + clazz, ex);
 			return null;
 		}
 	}

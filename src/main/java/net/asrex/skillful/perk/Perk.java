@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import net.asrex.skillful.effect.Effect;
+import net.asrex.skillful.exception.SkillfulException;
 import net.minecraft.nbt.NBTTagCompound;
 
 /**
@@ -47,6 +48,10 @@ public class Perk {
 	
 	public void readNBT(NBTTagCompound tag) {
 		definition = PerkRegistry.getPerkDefinition(tag.getString("name"));
+		if (definition == null) {
+			throw new SkillfulException("Missing perk definition: "
+					+ tag.getString("name"));
+		}
 		
 		// TODO: figure out cooldown/lastActivatedTick
 	}
@@ -161,6 +166,9 @@ public class Perk {
 			return null;
 		} catch (ReflectiveOperationException ex) {
 			log.error("Could not instantiate perk: " + clazz, ex);
+			return null;
+		} catch (SkillfulException ex) {
+			log.error("Could not read perk from NBT: " + clazz, ex);
 			return null;
 		}
 	}
