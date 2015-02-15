@@ -156,7 +156,9 @@ public class PlayerSkillInfo  {
 			if (skill != null) {
 				skills.put(skill.getName(), skill); // TODO: notify?
 			} else {
-				log.warn("Skill could not be read from NBT: {}", tag);
+				log.warn("Skill could not be read from NBT, "
+						+ "removing from player: {}",
+						tag);
 			}
 		} else {
 			skill.readNBT(tag); // TODO: notify? update auto perks?
@@ -244,7 +246,9 @@ public class PlayerSkillInfo  {
 			if (p != null) {
 				perks.put(p.getName(), p);
 			} else {
-				log.warn("Perk could not be updated from NBT: {}", tag);
+				log.warn("Perk could not be updated from NBT, "
+						+ "removing from player: {}",
+						tag);
 			}
 		} else {
 			p.readNBT(tag);
