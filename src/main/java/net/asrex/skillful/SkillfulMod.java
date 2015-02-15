@@ -29,10 +29,12 @@ import net.asrex.skillful.message.client.SkillInfoMessage;
 import net.asrex.skillful.message.server.PerkActivateHandler;
 import net.asrex.skillful.message.server.PerkActivateMessage;
 import net.asrex.skillful.perk.PerkRegistry;
+import net.asrex.skillful.requirement.RequirementRegistry;
 import net.asrex.skillful.seed.BlockSeed;
 import net.asrex.skillful.seed.CombatSeed;
 import net.asrex.skillful.seed.CraftingSeed;
 import net.asrex.skillful.seed.DeathSeed;
+import net.asrex.skillful.seed.TimerSeed;
 import net.asrex.skillful.skill.SkillRegistry;
 import net.asrex.skillful.ui.ChatEventDisplay;
 import net.asrex.skillful.ui.PerkUIManager;
@@ -82,6 +84,7 @@ public class SkillfulMod {
 		// FML events
 		FMLCommonHandler.instance().bus().register(new PlayerSkillManager());
 		FMLCommonHandler.instance().bus().register(new CraftingSeed());
+		FMLCommonHandler.instance().bus().register(new TimerSeed());
 		
 		// messages: server -> client
 		CHANNEL.registerMessage(
@@ -106,6 +109,8 @@ public class SkillfulMod {
 	
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
+		RequirementRegistry.registerDefaults();
+		
 		try {
 			SkillRegistry.init(configDir);
 		} catch (IOException ex) {

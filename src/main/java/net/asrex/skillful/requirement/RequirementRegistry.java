@@ -35,4 +35,14 @@ public class RequirementRegistry {
 		PerkRegistry.registerRequirement(name, requirementType);
 	}
 	
+	public static void registerDefaults() {
+		register("block_level", BlockLevelRequirement.class);
+		register("light_level", LightLevelRequirement.class);
+		register("sneak", SneakRequirement.class);
+		register("motion", MotionRequirement.class);
+		
+		register("perk", PerkRequirement.class);
+		register("skill", SkillRequirement.class);
+	}
+	
 }
