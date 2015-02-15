@@ -57,9 +57,8 @@ public class PerkRegistry {
 	private PerkRegistry() {
 		constructor = new Constructor();
 		
-		// definte the requirement types
-		map(SkillRequirement.class, "!skill_req");
-		map(PerkRequirement.class, "!perk_req");
+		// init predefined costs/packs types
+		// (requirements defined in RequirementRegistry)
 		map(PerkSkillCost.class, "!skill_cost");
 		map(AllPerkPacksPerkPack.class, "!all");
 		
