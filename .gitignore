@@ -25,3 +25,12 @@ gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+
+# minecraft run dir
+/minecraft
+
+# nb-gradle
+/.nb-gradle/private/
+/contrib/danger-zone/.nb-gradle/private/
+/contrib/morph/.nb-gradle/private/
+/contrib/tinkers/.nb-gradle/private/
