@@ -78,12 +78,13 @@ public class SkillRegistry {
 		map(clazz, "!" + name);
 	}
 	
-	public static void init(File configDir) throws IOException {
+	private static void processConfigFile(File configDir, String path)
+			throws IOException {
 		SkillRegistry r = getInstance();
 		
 		Yaml yaml = new Yaml(r.constructor);
 		SkillConfig conf = yaml.loadAs(
-				new FileReader(new File(configDir, SKILLS_FILENAME)),
+				new FileReader(new File(configDir, path)),
 				SkillConfig.class);
 		
 		for (SkillDefinition def : conf.skills) {
@@ -111,6 +112,15 @@ public class SkillRegistry {
 				r.skillDefinitions.put(def.getName(), def);
 			}
 		}
+		
+		// TODO: can recurse, should probably prevent that...
+		for (String include : conf.includes) {
+			processConfigFile(configDir, include);
+		}
+	}
+	
+	public static void init(File configDir) throws IOException {
+		processConfigFile(configDir, SKILLS_FILENAME);
 	}
 	
 	/**
@@ -214,6 +224,7 @@ public class SkillRegistry {
 		
 		public List<SkillDefinition> skills = new LinkedList<>();
 		public List<SkillPack> packs = new LinkedList<>();
+		public List<String> includes = new LinkedList<>();
 		
 	}
 	

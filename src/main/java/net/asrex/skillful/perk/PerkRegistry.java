@@ -96,12 +96,13 @@ public class PerkRegistry {
 		_register("speed", SpeedEffectDefinition.class);
 	}
 	
-	public static void init(File configDir) throws IOException {
+	private static void processConfigFile(File configDir, String path)
+			throws IOException {
 		PerkRegistry r = getInstance();
 		
 		Yaml yaml = new Yaml(r.constructor);
 		PerkConfig conf = yaml.loadAs(
-				new FileReader(new File(configDir, PERKS_FILENAME)),
+				new FileReader(new File(configDir, path)),
 				PerkConfig.class);
 		
 		for (PerkDefinition def : conf.perks) {
@@ -129,6 +130,15 @@ public class PerkRegistry {
 				r.perks.put(def.getName(), def);
 			}
 		}
+		
+		// process includes
+		for (String include : conf.includes) {
+			processConfigFile(configDir, include);
+		}
+	}
+	
+	public static void init(File configDir) throws IOException {
+		processConfigFile(configDir, PERKS_FILENAME);
 	}
 	
 	private void _register(
@@ -372,6 +382,7 @@ public class PerkRegistry {
 		
 		public List<PerkDefinition> perks = new LinkedList<>();
 		public List<PerkPack> packs = new LinkedList<>();
+		public List<String> includes = new LinkedList<>();
 		
 	}
 	
