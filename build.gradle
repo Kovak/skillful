@@ -96,4 +96,11 @@ runClient {
     jvmArgs "-Xmx4096m"
 }
 
+artifacts {
+    archives jar
+    archives sourceJar
+    archives deobfJar
+    archives javadocJar
+}
+
 build.dependsOn sourceJar, deobfJar
