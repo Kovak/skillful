@@ -7,7 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import net.asrex.skillful.effect.Effect;
 
 /**
- * Manages the lifecycle of player skill data, particular the loading, saving,
+ * Manages the lifecycle of player skill data, particularly the loading, saving,
  * and updating of player skills and perks.
  */
 @Log4j2
