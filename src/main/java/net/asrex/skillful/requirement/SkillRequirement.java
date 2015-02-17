@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 import lombok.Data;
 import net.asrex.skillful.PlayerSkillInfo;
 import net.asrex.skillful.skill.Skill;
+import net.asrex.skillful.util.Conditional;
 import net.asrex.skillful.util.Log;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumChatFormatting;
@@ -18,6 +19,7 @@ public class SkillRequirement implements Requirement {
 	
 	private String skill;
 	private int level;
+	private Conditional is = Conditional.at_least;
 	
 	@Override
 	public boolean satisfied(EntityPlayer player, PlayerSkillInfo info) {
@@ -31,7 +33,7 @@ public class SkillRequirement implements Requirement {
 			return false;
 		}
 		
-		return s.getLevel() >= level;
+		return is.compare(s.getLevel(), level);
 	}
 	
 	@Override
