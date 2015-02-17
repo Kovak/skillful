@@ -9,19 +9,22 @@ import lombok.Data;
 public class ExponentialScaling implements ScalingStrategy {
 
 	private float base;
-	private float value;
+	private float baseCoef;
+	private float expCoef;
 	
 	public ExponentialScaling() {
 	}
-	
-	public ExponentialScaling(float base, float value) {
+
+	public ExponentialScaling(float base, float baseCoef, float expCoef) {
 		this.base = base;
-		this.value = value;
+		this.baseCoef = baseCoef;
+		this.expCoef = expCoef;
 	}
 	
 	@Override
 	public int getProgressForLevel(int level) {
-		return (int) (base + level * Math.pow(value, level));
+		// a * b^(c * level)
+		return (int) (baseCoef * Math.pow(base, expCoef * (double) level));
 	}
 	
 }
