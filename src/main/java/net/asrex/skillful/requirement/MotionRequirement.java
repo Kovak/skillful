@@ -8,11 +8,14 @@ import net.minecraft.entity.player.EntityPlayer;
 /**
  * A requirement satisfied when the player is in motion.
  * 
- * This is currently broken 
+ * This is currently broken and will only update if the player is riding another
+ * entity.
  */
 @Data
 public class MotionRequirement implements Requirement {
 
+	// moveForward and moveStrafing also tried, same issue. :(
+	
 	private Parameter x;
 	private Parameter y;
 	private Parameter z;
