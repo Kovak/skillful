@@ -39,8 +39,7 @@ public class RequirementRegistry {
 		register("block_level", BlockLevelRequirement.class);
 		register("light_level", LightLevelRequirement.class);
 		register("sneak", SneakRequirement.class);
-		register("motion", MotionRequirement.class);
-		
+		//register("motion", MotionRequirement.class);
 		register("perk", PerkRequirement.class);
 		register("skill", SkillRequirement.class);
 	}
