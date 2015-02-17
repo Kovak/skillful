@@ -16,7 +16,7 @@ public class BlockLevelRequirement implements Requirement {
 	
 	@Override
 	public boolean satisfied(EntityPlayer player, PlayerSkillInfo info) {
-		return is.compare(level, (int) player.posY);
+		return is.compare((int) player.posY, level);
 	}
 
 	@Override
