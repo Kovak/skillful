@@ -1,0 +1,21 @@
+[
+{
+  "modid" : "skillful-tinkers",
+  "name" : "skillful-tinkers",
+  "version" : "${version}",
+  "url" : "http://mc.asrex.net/mods/skillful/",
+  "credits" : "",
+  "authors": [
+    "asrex"
+  ],
+  "description": "Tinkers' Construct Skillful Integration",
+  "logoFile" : "",
+  "updateUrl" : "",
+  "parent" : "",
+  "screenshots": [
+  ],
+  "dependancies": [
+    "Forge"
+  ]
+}
+] 

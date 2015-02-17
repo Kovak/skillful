@@ -27,7 +27,7 @@ gradle-app.setting
 !gradle-wrapper.jar
 
 # minecraft run dir
-/minecraft
+minecraft/
 
 # nb-gradle
 /.nb-gradle/private/
