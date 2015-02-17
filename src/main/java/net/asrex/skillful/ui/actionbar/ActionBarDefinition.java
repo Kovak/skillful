@@ -20,7 +20,6 @@ import org.lwjgl.input.Keyboard;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@SideOnly(Side.CLIENT)
 public class ActionBarDefinition extends PerkUIDefinition {
 	
 	public static final String ICONS_TEXTURE = "skillful:textures/icons.png";
@@ -38,7 +37,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 		DEFAULT_FIRST_TEXTURE    = new TexturePosition(0, 0, 21, 22);
 		DEFAULT_MIDDLE_TEXTURE   = new TexturePosition(21, 0, 20, 22);
 		DEFAULT_LAST_TEXTURE     = new TexturePosition(161, 0, 21, 22);
-		DEFAULT_SELECTED_TEXTURE = new TexturePosition(0, 22, 24, 24, -2, -1);
+		DEFAULT_SELECTED_TEXTURE = new TexturePosition(0, 22, 24, 24, -1, -1);
 		
 		// icons.png
 		DEFAULT_ACTIVE_TEXTURE   = new SpriteSheetPosition(0, 15, 4, 4);
@@ -166,6 +165,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 		activeTexture = TextureRegistry.getTexture(texName);
 	}
 	
+	@SideOnly(Side.CLIENT)
 	public int getHideKey() {
 		if (hideKey != -1) {
 			return hideKey;
@@ -176,6 +176,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	public int getActivateKey() {
 		if (activateKey != -1) {
 			return activateKey;
@@ -186,6 +187,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	public int getModifierKey() {
 		if (modifierKey != -1) {
 			return modifierKey;

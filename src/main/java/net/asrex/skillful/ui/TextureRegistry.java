@@ -19,7 +19,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
  * Handles loading of texture data from config files.
  */
 @Log4j2
-@SideOnly(Side.CLIENT)
 public class TextureRegistry {
 	
 	public static final String TEXTURES_FILENAME = "textures.yml";

@@ -62,8 +62,7 @@ public class PlayerSkillManager {
 	@SubscribeEvent
 	public void onClientConnected(
 			FMLNetworkEvent.ClientConnectedToServerEvent event) {
-		System.out.println("=== connected");
-		//PlayerSkillInfo.reset();
+		PlayerSkillInfo.clientReset();
 	}
 	
 	@SubscribeEvent

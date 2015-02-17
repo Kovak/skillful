@@ -76,7 +76,6 @@ public class SkillfulMod {
 		
 		// forge events
 		MinecraftForge.EVENT_BUS.register(new ChatEventDisplay());
-		MinecraftForge.EVENT_BUS.register(new PerkUIManager());
 		MinecraftForge.EVENT_BUS.register(new BlockSeed());
 		MinecraftForge.EVENT_BUS.register(new DeathSeed());
 		MinecraftForge.EVENT_BUS.register(new CombatSeed());
@@ -128,6 +127,12 @@ public class SkillfulMod {
 		} catch (IOException ex) {
 			log.error("Could not read ui.yml", ex);
 		}
+	}
+	
+	@EventHandler
+	@SideOnly(Side.CLIENT)
+	public void initClient(FMLInitializationEvent event) {
+		MinecraftForge.EVENT_BUS.register(new PerkUIManager());
 	}
 	
 	@EventHandler
@@ -187,6 +192,9 @@ public class SkillfulMod {
 			
 			log.info("Wrote player NBT (integrated server)");
 		}
+		
+		// reset for good measure
+		PlayerSkillInfo.reset();
 	}
 	
 }

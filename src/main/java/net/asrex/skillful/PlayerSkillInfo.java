@@ -668,11 +668,14 @@ public class PlayerSkillInfo  {
 	}
 	
 	public static void reset() {
-		clientInfo = null;
-		
 		if (playerMap != null) {
 			playerMap.clear();
 		}
 	}
+	
+	public static void clientReset() {
+		clientInfo = null;
+	}
+	
 	
 }

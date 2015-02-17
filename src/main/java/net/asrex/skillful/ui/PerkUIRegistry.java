@@ -1,7 +1,7 @@
 package net.asrex.skillful.ui;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -25,7 +25,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
  * <p>Note that </p>
  */
 @Log4j2
-@SideOnly(Side.CLIENT)
 public class PerkUIRegistry {
 	
 	public static final String UI_FILENAME = "ui.yml";
