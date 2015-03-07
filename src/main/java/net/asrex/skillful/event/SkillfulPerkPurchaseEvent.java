@@ -12,7 +12,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 /**
  * An event dispatched before a perk has been purchased by a player.
  */
-@Cancelable
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class SkillfulPerkPurchaseEvent extends PlayerEvent {
@@ -21,14 +20,36 @@ public class SkillfulPerkPurchaseEvent extends PlayerEvent {
 	private final Perk perk;
 	private final boolean automatic;
 
-	@Builder
-	public SkillfulPerkPurchaseEvent(
+	private SkillfulPerkPurchaseEvent(
 			EntityPlayer player, PlayerSkillInfo info,
 			Perk perk, boolean automatic) {
 		super(player);
 		this.info = info;
 		this.perk = perk;
 		this.automatic = automatic;
+	}
+	
+	@Cancelable
+	public static class Pre extends SkillfulPerkPurchaseEvent {
+
+		@Builder
+		public Pre(
+				EntityPlayer player, PlayerSkillInfo info,
+				Perk perk, boolean automatic) {
+			super(player, info, perk, automatic);
+		}
+		
+	}
+	
+	public static class Post extends SkillfulPerkPurchaseEvent {
+
+		@Builder
+		public Post(
+				EntityPlayer player, PlayerSkillInfo info,
+				Perk perk, boolean automatic) {
+			super(player, info, perk, automatic);
+		}
+		
 	}
 	
 }

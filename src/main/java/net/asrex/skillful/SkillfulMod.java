@@ -20,21 +20,11 @@ import net.asrex.skillful.command.PerkEffectCommand;
 import net.asrex.skillful.command.PerkUICommand;
 import net.asrex.skillful.command.SkillCommand;
 import net.asrex.skillful.effect.Effect;
-import net.asrex.skillful.message.client.EffectToggleHandler;
-import net.asrex.skillful.message.client.EffectToggleMessage;
-import net.asrex.skillful.message.client.PerkActivateErrorHandler;
-import net.asrex.skillful.message.client.PerkActivateErrorMessage;
-import net.asrex.skillful.message.client.SkillInfoHandler;
-import net.asrex.skillful.message.client.SkillInfoMessage;
-import net.asrex.skillful.message.server.PerkActivateHandler;
-import net.asrex.skillful.message.server.PerkActivateMessage;
+import net.asrex.skillful.message.client.*;
+import net.asrex.skillful.message.server.*;
 import net.asrex.skillful.perk.PerkRegistry;
 import net.asrex.skillful.requirement.RequirementRegistry;
-import net.asrex.skillful.seed.BlockSeed;
-import net.asrex.skillful.seed.CombatSeed;
-import net.asrex.skillful.seed.CraftingSeed;
-import net.asrex.skillful.seed.DeathSeed;
-import net.asrex.skillful.seed.TimerSeed;
+import net.asrex.skillful.seed.*;
 import net.asrex.skillful.skill.SkillRegistry;
 import net.asrex.skillful.ui.ChatEventDisplay;
 import net.asrex.skillful.ui.PerkUIManager;
@@ -85,6 +75,14 @@ public class SkillfulMod {
 		FMLCommonHandler.instance().bus().register(new CraftingSeed());
 		FMLCommonHandler.instance().bus().register(new TimerSeed());
 		
+		InfoLifecycleManager ilm = new InfoLifecycleManager();
+		MinecraftForge.EVENT_BUS.register(ilm);
+		FMLCommonHandler.instance().bus().register(ilm);
+		
+		PublicInfoLifecycleManager pilm = new PublicInfoLifecycleManager();
+		MinecraftForge.EVENT_BUS.register(pilm);
+		FMLCommonHandler.instance().bus().register(pilm);
+		
 		// messages: server -> client
 		CHANNEL.registerMessage(
 				SkillInfoHandler.class,
@@ -98,6 +96,14 @@ public class SkillfulMod {
 				PerkActivateErrorHandler.class,
 				PerkActivateErrorMessage.class,
 				2, Side.CLIENT);
+		CHANNEL.registerMessage(
+				PublicSkillInfoHandler.class,
+				PublicSkillInfoMessage.class,
+				4, Side.CLIENT);
+		CHANNEL.registerMessage(
+				ResetPlayerHandler.class,
+				ResetPlayerMessage.class,
+				5, Side.CLIENT);
 		
 		// messages: client -> server
 		CHANNEL.registerMessage(
@@ -171,9 +177,9 @@ public class SkillfulMod {
 		MinecraftServer server = MinecraftServer.getServer();
 		
 		// don't run on the dedicated server - it handles saving correctly
-		if (server.isDedicatedServer()) {
-			return;
-		}
+		//if (server.isDedicatedServer()) {
+		//	return;
+		//}
 		
 		for (String user : server.getAllUsernames()) {
 			// func_152612_a() -> getPlayerForUsername
@@ -190,7 +196,7 @@ public class SkillfulMod {
 			
 			info.writeNBT(player.getEntityData());
 			
-			log.info("Wrote player NBT (integrated server)");
+			log.info("Wrote player NBT (integrated server): {}", user);
 		}
 		
 		// reset for good measure

@@ -32,7 +32,7 @@ public class ChatEventDisplay {
 	}
 	
 	@SubscribeEvent
-	public void onPerkPurchased(SkillfulPerkPurchaseEvent event) {
+	public void onPerkPurchased(SkillfulPerkPurchaseEvent.Post event) {
 		// server only
 		if (event.entityPlayer.worldObj.isRemote) {
 			return;
@@ -40,7 +40,7 @@ public class ChatEventDisplay {
 		
 		// TODO: event on manual purchase
 		event.entityPlayer.addChatMessage(new ChatComponentText(String.format(
-				"Perk added: [%s%s%s]!",
+				"Perk added: %s%s%s!",
 				EnumChatFormatting.AQUA,
 				event.getPerk().getName(),
 				EnumChatFormatting.RESET)));

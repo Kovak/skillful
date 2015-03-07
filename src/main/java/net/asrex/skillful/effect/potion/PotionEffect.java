@@ -13,9 +13,14 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 public class PotionEffect extends Effect {
 
+	public static final int REFRESH_TICKS = 80;
+	
 	private int effectId;
 	private int duration;
 	private int amplifier;
+	
+	// refresh timer - not stored in NBT
+	private int lastRefreshTick = 0;
 
 	public PotionEffect() {
 		
@@ -55,10 +60,11 @@ public class PotionEffect extends Effect {
 			return;
 		}
 		
-		// simulate a beacon
-		if (player.worldObj.getTotalWorldTime() % 80 == 0) {
+		if (player.ticksExisted - lastRefreshTick > REFRESH_TICKS) {
 			player.addPotionEffect(new net.minecraft.potion.PotionEffect(
 					effectId, duration, amplifier, true));
+			
+			lastRefreshTick = player.ticksExisted;
 		}
 	}
 

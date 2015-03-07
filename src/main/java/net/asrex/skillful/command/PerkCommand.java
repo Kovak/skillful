@@ -7,6 +7,7 @@ import java.util.List;
 import net.asrex.skillful.PlayerNetworkHelper;
 import net.asrex.skillful.PlayerSkillInfo;
 import static net.asrex.skillful.command.ChatComponentHelper.*;
+import net.asrex.skillful.event.SkillfulPerkPurchaseEvent;
 import net.asrex.skillful.perk.Perk;
 import net.asrex.skillful.perk.PerkDefinition;
 import net.asrex.skillful.perk.PerkRegistry;
@@ -15,9 +16,13 @@ import net.asrex.skillful.requirement.Requirement;
 import static net.asrex.skillful.util.TextUtil.slugify;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttribute;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import static net.minecraft.util.EnumChatFormatting.*;
+import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -67,11 +72,12 @@ public class PerkCommand extends CommandBase {
 			String action = args[0].toLowerCase();
 			
 			switch (action) {
-				case "show":     showPerks(player);       break;
-				case "show-all": showAllPerks(player);    break;
-				case "buy":      showPurchasable(player); break;
-				case "refund":   showRefundable(player);  break;
-				case "help":     showHelp(player);        break;
+				case "show":           showPerks(player);        break;
+				case "show-all":       showAllPerks(player);     break;
+				case "buy":            showPurchasable(player);  break;
+				case "refund":         showRefundable(player);   break;
+				case "help":           showHelp(player);         break;
+				case "clearmodifiers": doClearModifiers(player); break;
 				default:       send(sender, getCommandUsage(sender)); break;
 			}
 		} else if (args.length == 2) {
@@ -370,18 +376,42 @@ public class PerkCommand extends CommandBase {
 			cost.apply(player, info);
 		}
 		
+		Perk perk = def.createPerk();
+		
+		boolean canceled = MinecraftForge.EVENT_BUS.post(
+					SkillfulPerkPurchaseEvent.Pre.builder()
+							.player(player)
+							.info(info)
+							.perk(perk)
+							.automatic(false)
+							.build());
+		
+		if (canceled) {
+			send(player, "Perk purchase was canceled: " + def.getName());
+			
+			return;
+		}
+		
 		if (def.isActivatedOnPurchase()) {
-			PlayerNetworkHelper.addAndActivatePerk(player, def.createPerk());
+			PlayerNetworkHelper.addAndActivatePerk(player, perk);
 		
 			send(player, "You have purchased and activated the perk: "
 					+ def.getName());
 		} else {
-			info.addPerk(def.createPerk());
+			info.addPerk(perk);
 			
 			// TODO: update client? probably not necessary...
 			
 			send(player, "You have purchased the perk: " + def.getName());
 		}
+		
+		MinecraftForge.EVENT_BUS.post(
+					SkillfulPerkPurchaseEvent.Post.builder()
+							.player(player)
+							.info(info)
+							.perk(perk)
+							.automatic(false)
+							.build());
 	}
 	
 	private void doRefund(EntityPlayer player, String perkSlug) {
@@ -411,6 +441,29 @@ public class PerkCommand extends CommandBase {
 		PlayerNetworkHelper.removeAndDeactivatePerk(player, perk);
 		
 		send(player, "You have been refunded for the perk: " + def.getName());
+	}
+	
+	private void doClearModifiers(EntityPlayer player) {
+		Collection<IAttributeInstance> attrs = player.getAttributeMap().getAllAttributes();
+		for (IAttributeInstance attr : attrs) {
+			Collection<AttributeModifier> mods = attr.func_111122_c();
+			
+			List<AttributeModifier> toRemove = new LinkedList<>();
+			
+			for (AttributeModifier mod : mods) {
+				if (mod.getName().startsWith("skillful.")) {
+					toRemove.add(mod);
+				}
+			}
+			
+			for (AttributeModifier mod : toRemove) {
+				attr.removeModifier(mod);
+			}
+			
+			send(player, String.format(
+					"Removed %d modifier(s) from attribute",
+					toRemove.size()));
+		}
 	}
 	
 	private void showHelp(EntityPlayer player) {

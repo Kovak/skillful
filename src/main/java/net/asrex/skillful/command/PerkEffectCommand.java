@@ -168,6 +168,8 @@ public class PerkEffectCommand extends CommandBase {
 					perk,
 					true);
 			
+			perk.setLastActivatedTick(player.ticksExisted);
+			
 			send(player, "All effects of perk activated: " + perk.getName());
 		} else {
 			if (!perk.getDefinition().isCancelable()) {

@@ -16,10 +16,17 @@ import net.asrex.skillful.PlayerNetworkHelper;
 import net.asrex.skillful.PlayerSkillInfo;
 import net.asrex.skillful.effect.Effect;
 import net.asrex.skillful.effect.EffectDefinition;
+import net.asrex.skillful.effect.food.FoodOnKillEffectDefinition;
+import net.asrex.skillful.effect.food.FoodOverTimeEffectDefinition;
 import net.asrex.skillful.effect.glide.GlideEffectDefinition;
+import net.asrex.skillful.effect.health.HealthEffectDefinition;
+import net.asrex.skillful.effect.invisibility.InvisbilityEffectDefinition;
+import net.asrex.skillful.effect.jump.JumpBoostEffectDefinition;
 import net.asrex.skillful.effect.potion.PotionAbilityDefinition;
 import net.asrex.skillful.effect.potion.PotionEffectDefinition;
+import net.asrex.skillful.effect.resist.DamageResistEffectDefinition;
 import net.asrex.skillful.effect.speed.SpeedEffectDefinition;
+import net.asrex.skillful.effect.step.StepHeightEffectDefinition;
 import net.asrex.skillful.pack.AllPerkPacksPerkPack;
 import net.asrex.skillful.pack.PerkPack;
 import net.asrex.skillful.perk.cost.PerkCost;
@@ -94,6 +101,13 @@ public class PerkRegistry {
 		_register("potion", PotionEffectDefinition.class);
 		_register("potion_ability", PotionAbilityDefinition.class);
 		_register("speed", SpeedEffectDefinition.class);
+		_register("health", HealthEffectDefinition.class);
+		_register("step_height", StepHeightEffectDefinition.class);
+		_register("food_over_time", FoodOverTimeEffectDefinition.class);
+		_register("food_on_kill", FoodOnKillEffectDefinition.class);
+		_register("damage_resist", DamageResistEffectDefinition.class);
+		_register("jump_boost", JumpBoostEffectDefinition.class);
+		_register("invisibility", InvisbilityEffectDefinition.class);
 	}
 	
 	private static void processConfigFile(File configDir, String path)
@@ -104,6 +118,11 @@ public class PerkRegistry {
 		PerkConfig conf = yaml.loadAs(
 				new FileReader(new File(configDir, path)),
 				PerkConfig.class);
+		
+		if (conf == null) {
+			log.warn("Skill config '{}' was empty, ignoring...", path);
+			return;
+		}
 		
 		for (PerkDefinition def : conf.perks) {
 			if (r.perks.containsKey(def.getName())) {

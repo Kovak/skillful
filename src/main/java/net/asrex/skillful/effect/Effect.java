@@ -4,6 +4,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -43,6 +44,7 @@ import net.minecraftforge.common.MinecraftForge;
  * executed.</p>
  */
 @Log4j2
+@ToString(of = {"perkName", "effectName", "enabled"})
 public abstract class Effect {
 	
 	@Getter @Setter private String perkName;
@@ -220,7 +222,11 @@ public abstract class Effect {
 	 * @param o the object to deregister, such as {@code this}.
 	 */
 	protected void unregisterForge(Object o) {
-		MinecraftForge.EVENT_BUS.unregister(o);
+		try {
+			MinecraftForge.EVENT_BUS.unregister(o);
+		} catch (NullPointerException e) {
+			// :(
+		}
 	}
 	
 	/**

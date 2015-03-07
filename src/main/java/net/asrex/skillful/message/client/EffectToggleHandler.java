@@ -9,7 +9,9 @@ import net.asrex.skillful.PlayerSkillInfo;
 import net.asrex.skillful.effect.AbilityDefinition;
 import net.asrex.skillful.effect.Effect;
 import net.asrex.skillful.effect.EffectDefinition;
+import net.asrex.skillful.effect.PublicEffect;
 import net.asrex.skillful.event.SkillfulEffectToggledEvent;
+import net.asrex.skillful.perk.Perk;
 import net.minecraftforge.common.MinecraftForge;
 
 /**
@@ -28,6 +30,16 @@ public class EffectToggleHandler
 		
 		// attempt to toggle the effect
 		PlayerSkillInfo info = PlayerSkillInfo.getClientInfo();
+		
+		// set the last activated tick
+		Perk perk = info.getPerk(message.getPerk());
+		if (perk == null) {
+			log.warn("Server attemptd to toggle missing perk on player: {}",
+					info);
+			return null;
+		}
+		
+		perk.setLastActivatedTick(info.getPlayer().ticksExisted);
 		
 		EffectDefinition eDef = info.getEffectDefinition(
 				message.getPerk(), message.getEffect());
@@ -50,7 +62,9 @@ public class EffectToggleHandler
 			}
 		}
 		
-		e.toggle(message.isActivated());
+		if (!(e instanceof PublicEffect)) {
+			e.toggle(message.isActivated());
+		}
 		
 		MinecraftForge.EVENT_BUS.post(SkillfulEffectToggledEvent.builder()
 				.player(info.getPlayer())

@@ -29,6 +29,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 	public static final TexturePosition DEFAULT_LAST_TEXTURE;
 	public static final TexturePosition DEFAULT_SELECTED_TEXTURE;
 	public static final TexturePosition DEFAULT_ACTIVE_TEXTURE;
+	public static final TexturePosition DEFAULT_COOLDOWN_TEXTURE;
 	
 	public static final AnchorLocation DEFAULT_ANCHOR;
 	
@@ -41,6 +42,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 		
 		// icons.png
 		DEFAULT_ACTIVE_TEXTURE   = new SpriteSheetPosition(0, 15, 4, 4);
+		DEFAULT_COOLDOWN_TEXTURE = new SpriteSheetPosition(1, 15);
 		
 		DEFAULT_ANCHOR = AnchorLocation.builder()
 				.horizontal(AnchorHorizontal.center)
@@ -103,6 +105,12 @@ public class ActionBarDefinition extends PerkUIDefinition {
 	private TexturePosition activeTexture = DEFAULT_ACTIVE_TEXTURE;
 	
 	/**
+	 * The texture to overlay on top of any bar tile with a perk that is
+	 * currently waiting for a cooldown to finish.
+	 */
+	private TexturePosition cooldownTexture = DEFAULT_COOLDOWN_TEXTURE;
+	
+	/**
 	 * The size of the icons. 16 by default.
 	 */
 	private int iconSize = 16;
@@ -135,7 +143,7 @@ public class ActionBarDefinition extends PerkUIDefinition {
 	private String activateKeyName = "F";
 	
 	private int modifierKey = -1;
-	private String modifierKeyName = "LSHIFT";
+	private String modifierKeyName = "LMENU";
 	
 	@Override
 	public PerkUI createUI() {

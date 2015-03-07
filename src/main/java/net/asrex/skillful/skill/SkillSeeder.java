@@ -75,7 +75,7 @@ public class SkillSeeder {
 		}
 		
 		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
-		log.info("Seeding event [{}] for player: {}", eventName, player);
+		log.debug("Seeding event [{}] for player: {}", eventName, player);
 		
 		// seed skills
 		for (Skill s : info.getSkillsForEvent(eventName)) {
@@ -87,7 +87,7 @@ public class SkillSeeder {
 			int amount = s.getDefinition().getEventValue(eventName);
 			
 			boolean canceled = MinecraftForge.EVENT_BUS.post(
-					SkillfulProgressEvent.builder()
+					SkillfulProgressEvent.Pre.builder()
 							.player(player)
 							.info(info)
 							.skill(s)
@@ -110,6 +110,14 @@ public class SkillSeeder {
 							.startLevel(startLevel)
 							.build());
 				}
+				
+				MinecraftForge.EVENT_BUS.post(
+						SkillfulProgressEvent.Post.builder()
+								.player(player)
+								.info(info)
+								.skill(s)
+								.progressAmount(amount)
+								.build());
 			}
 		}
 		
@@ -131,7 +139,7 @@ public class SkillSeeder {
 			Perk perk = def.createPerk();
 			
 			boolean canceled = MinecraftForge.EVENT_BUS.post(
-					SkillfulPerkPurchaseEvent.builder()
+					SkillfulPerkPurchaseEvent.Pre.builder()
 							.player(player)
 							.info(info)
 							.perk(perk)
@@ -148,17 +156,25 @@ public class SkillSeeder {
 			if (def.isActivatedOnPurchase()) {
 				PlayerNetworkHelper.togglePerk(player, perk, true);
 			}
+			
+			MinecraftForge.EVENT_BUS.post(
+					SkillfulPerkPurchaseEvent.Post.builder()
+							.player(player)
+							.info(info)
+							.perk(perk)
+							.automatic(true)
+							.build());
 		}
 		
 		// seed perk interrupts
 		for (Perk perk : info.getInterruptedPerksForEvent(eventName)) {
-			log.info("Dectiving perk due to seed '{}': {}", eventName, perk);
+			log.debug("Dectiving perk due to seed '{}': {}", eventName, perk);
 			PlayerNetworkHelper.togglePerk(player, perk, false);
 		}
 		
 		// seed perk triggers
 		for (Perk perk : info.getTriggeredPerksForEvent(eventName)) {
-			log.info("Activing perk due to seed '{}': {}", eventName, perk);
+			log.debug("Activing perk due to seed '{}': {}", eventName, perk);
 			PlayerNetworkHelper.togglePerk(player, perk, true);
 		}
 	}

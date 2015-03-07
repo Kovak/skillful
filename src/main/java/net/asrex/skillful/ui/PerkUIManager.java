@@ -68,7 +68,6 @@ public class PerkUIManager {
 			// clear old perks
 			ui.clearPerks();
 			
-			System.out.println("UI: " + data.getName());
 			for (Entry<Integer, String> perkData : data.getPerks().entrySet()) {
 				Perk perk = info.getPerk(perkData.getValue());
 				if (perk == null) {

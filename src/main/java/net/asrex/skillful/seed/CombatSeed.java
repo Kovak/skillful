@@ -31,9 +31,9 @@ public class CombatSeed {
 			return;
 		}
 		
-		System.out.println("=== "
-				+ "hurt: " + event.source + "; "
-				+ "amount: " + event.ammount);
+		//System.out.println("=== "
+		//		+ "hurt: " + event.source + "; "
+		//		+ "amount: " + event.ammount);
 	}
 	
 	@SubscribeEvent

@@ -1,5 +1,7 @@
 package net.asrex.skillful.perk;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +55,7 @@ public class Perk {
 					+ tag.getString("name"));
 		}
 		
-		// TODO: figure out cooldown/lastActivatedTick
+		// lastActivatedTick is not stored in NBT (at least not now)
 	}
 	
 	/**
@@ -66,8 +68,6 @@ public class Perk {
 	public void writeNBT(NBTTagCompound tag) {
 		tag.setString("class", getClass().getName());
 		tag.setString("name", definition.getName());
-		
-		// TODO: figure out cooldown/lastActivatedTick
 	}
 	
 	/**
@@ -104,12 +104,18 @@ public class Perk {
 		}
 		
 		// has it been activated yet?
-		if (lastActivatedTick == -1) {
+		if (lastActivatedTick <= 0) {
 			return 0;
 		}
 		
-		return definition.getCooldownTicks()
+		int ret = definition.getCooldownTicks()
 				- (currentTick - lastActivatedTick);
+		
+		if (ret > 0) {
+			return ret;
+		} else {
+			return 0;
+		}
 	}
 	
 	/**

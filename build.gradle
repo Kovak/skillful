@@ -96,6 +96,12 @@ runClient {
     jvmArgs "-Xmx4096m"
 }
 
+jar {
+    manifest {
+        attributes 'FMLAT': 'Skillful_at.cfg'
+    }
+}
+
 artifacts {
     archives jar
     archives sourceJar

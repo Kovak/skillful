@@ -38,10 +38,8 @@ public class PerkActivateHandler
 		try {
 			if (message.isActivated()) {
 				PlayerNetworkHelper.activatePerk(player, perk);
-				System.out.println("=== activated " + perk);
 			} else {
 				PlayerNetworkHelper.deactivatePerk(player, perk);
-				System.out.println("=== deactivated " + perk);
 			}
 		} catch (PerkException ex) {
 			return new PerkActivateErrorMessage(

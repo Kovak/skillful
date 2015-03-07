@@ -10,11 +10,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import net.asrex.skillful.effect.Effect;
 import net.asrex.skillful.effect.EffectDefinition;
+import net.asrex.skillful.effect.PublicEffect;
 import net.asrex.skillful.perk.Perk;
 import net.asrex.skillful.perk.PerkDefinition;
 import net.asrex.skillful.skill.Skill;
@@ -32,19 +35,29 @@ import net.minecraftforge.common.util.Constants;
  * Stores player skill and perk data, and handles reading and writing to the
  * player NBT.
  */
-@ToString
+@ToString(of = {"player"})
 @Log4j2
 public class PlayerSkillInfo  {
 
 	public static final String TAG_NAME = "skillful";
 	
-	private static Map<EntityPlayer, PlayerSkillInfo> playerMap;
+	private static Map<UUID, PlayerSkillInfo> playerMap;
 	
 	@SideOnly(Side.CLIENT)
 	private static PlayerSkillInfo clientInfo;
 	
+	/**
+	 * The UUID of the current player.
+	 */
 	@Getter
-	private final EntityPlayer player;
+	private final UUID playerId;
+	
+	/**
+	 * The current player instance. This may change after certain events, e.g.
+	 * player death, that cause the creation of a new player entity.
+	 */
+	@Getter @Setter
+	private EntityPlayer player;
 	
 	private final Map<String, Skill> skills;
 	private final Map<String, Perk> perks;
@@ -52,14 +65,33 @@ public class PlayerSkillInfo  {
 	
 	private final Map<String, PerkUIData> uiData;
 	
+	/**
+	 * Information other players should know about this player.
+	 */
+	@Getter
+	private final PublicPlayerSkillInfo publicSkillInfo;
+	
+	/**
+	 * Information this player knows about other players. This is not read from
+	 * player NBT but will be updated dynamically to reflect the current
+	 * environment, including other players currently connected and any active
+	 * public effects.
+	 */
+	private final Map<UUID, PublicPlayerSkillInfo> otherPlayerInfo;
+	
 	public PlayerSkillInfo(EntityPlayer player) {
 		this.player = player;
+		this.playerId = player.getGameProfile().getId();
 		
 		skills = new LinkedHashMap<>();
 		perks = new LinkedHashMap<>();
 		
 		activeEffects = new LinkedList<>();
 		uiData = new LinkedHashMap<>();
+		
+		// currentPlayer == targetPlayer for player's own public info
+		publicSkillInfo = new PublicPlayerSkillInfo(player, player);
+		otherPlayerInfo = new LinkedHashMap<>();
 	}
 	
 	public Collection<Skill> getSkills() {
@@ -503,6 +535,59 @@ public class PlayerSkillInfo  {
 		return getEffectDefinition(perkName, effectName) != null;
 	}
 	
+	public PublicPlayerSkillInfo getOtherInfo(UUID otherPlayerId) {
+		if (otherPlayerId.equals(playerId)) {
+			return publicSkillInfo;
+		}
+		
+		return otherPlayerInfo.get(otherPlayerId);
+	}
+	
+	public PublicPlayerSkillInfo getOtherInfo(EntityPlayer otherPlayer) {
+		PublicPlayerSkillInfo info = getOtherInfo(
+				otherPlayer.getGameProfile().getId());
+		if (info == null) {
+			info = new PublicPlayerSkillInfo(player, otherPlayer);
+			otherPlayerInfo.put(otherPlayer.getGameProfile().getId(), info);
+		}
+		
+		return info;
+	}
+	
+	public void removeOtherInfo(UUID id) {
+		PublicPlayerSkillInfo info = otherPlayerInfo.get(id);
+		if (info != null) {
+			info.disableAllPublicEffects();
+			otherPlayerInfo.remove(id);
+		}
+	}
+	
+	/**
+	 * Disables and removes all {@link PublicPlayerSkillInfo} instances
+	 * maintained for other players in the {@link #otherPlayerInfo} map.
+	 * 
+	 * <p>This is called on client-side dimension change to prepare for a new
+	 * public skill and effect data to resync for the new dimension.
+	 */
+	public void clearOtherInfo() {
+		// disable all effects
+		for (PublicPlayerSkillInfo i : otherPlayerInfo.values()) {
+			i.disableAllPublicEffects();
+		}
+		
+		// clear the list
+		otherPlayerInfo.clear();
+	}
+	
+	public void resetPlayer(EntityPlayer player) {
+		setPlayer(player);
+		
+		// fix all effects
+		for (Effect e : activeEffects) {
+			e.setPlayer(player);
+		}
+	}
+	
 	public void readNBT(NBTTagCompound playerData) {
 		if (!playerData.hasKey(TAG_NAME)) {
 			// no current player data, use defaults
@@ -578,11 +663,23 @@ public class PlayerSkillInfo  {
 		// they ideally should be disabled via a toggle message first
 		activeEffects.removeAll(newEffects);
 		for (Effect e : activeEffects) {
-			e.disable();
+			// don't ever try to disable public effects here
+			// they only exist in the PlayerSkillInfo to be restarted at login
+			// disabling a PublicEffect instantiated here and not in PPSI will
+			// leave the targetPlayer unset and will throw an exception
+			
+			if (!(e instanceof PublicEffect)) {
+				e.disable();
+			}
 		}
 		
 		// do the swap
 		activeEffects = newEffects;
+		
+		// read public info
+		if (tag.hasKey("publicSkillInfo")) {
+			publicSkillInfo.readNBT(tag.getCompoundTag("publicSkillInfo"));
+		}
 	}
 	
 	public void writeNBT(NBTTagCompound playerData) {
@@ -620,7 +717,19 @@ public class PlayerSkillInfo  {
 		}
 		tag.setTag("activeEffects", activeEffectsList);
 		
+		NBTTagCompound publicInfoTag = new NBTTagCompound();
+		publicSkillInfo.writeNBT(publicInfoTag);
+		tag.setTag("publicSkillInfo", publicInfoTag);
+		
 		playerData.setTag(TAG_NAME, tag);
+	}
+	
+	public static PlayerSkillInfo getInfo(UUID playerId) {
+		if (playerMap == null) {
+			playerMap = new LinkedHashMap<>();
+		}
+		
+		return playerMap.get(playerId);
 	}
 	
 	public static PlayerSkillInfo getInfo(EntityPlayer player) {
@@ -630,19 +739,41 @@ public class PlayerSkillInfo  {
 							+ " client!");
 		}
 		
-		if (playerMap == null) {
-			playerMap = new HashMap<>();
+		PlayerSkillInfo info = getInfo(player.getGameProfile().getId());
+		if (info == null) {
+			info = new PlayerSkillInfo(player);
+			info.readNBT(player.getEntityData());
+
+			playerMap.put(player.getGameProfile().getId(), info);
 		}
 		
-		if (playerMap.containsKey(player)) {
-			return playerMap.get(player);
-		}
-		
-		PlayerSkillInfo info = new PlayerSkillInfo(player);
-		info.readNBT(player.getEntityData());
-		
-		playerMap.put(player, info);
 		return info;
+	}
+	
+	public static void removeInfo(EntityPlayer player) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException(
+					"PlayerSkillInfo.removeInfo() may not be executed on the"
+							+ " client!");
+		}
+		
+		if (playerMap == null) {
+			return;
+		}
+		
+		playerMap.remove(player.getGameProfile().getId());
+		
+		for (PlayerSkillInfo info : PlayerSkillInfo.getAllInfo()) {
+			info.removeOtherInfo(player.getGameProfile().getId());
+		}
+	}
+	
+	public static Collection<PlayerSkillInfo> getAllInfo() {
+		if (playerMap == null) {
+			playerMap = new LinkedHashMap<>();
+		}
+		
+		return playerMap.values();
 	}
 	
 	/**
@@ -655,10 +786,14 @@ public class PlayerSkillInfo  {
 	 * skill info object (with no set skills when they are otherwise expected)
 	 * may be returned if the skill info has not yet been synchronized with the
 	 * client.</p>
-	 * @return the client info
+	 * @return the client info, or null if no player exists yet
 	 */
 	@SideOnly(Side.CLIENT)
 	public static PlayerSkillInfo getClientInfo() {
+		if (Minecraft.getMinecraft().thePlayer == null) {
+			return null;
+		}
+		
 		if (clientInfo == null) {
 			clientInfo = new PlayerSkillInfo(
 					Minecraft.getMinecraft().thePlayer);
@@ -677,5 +812,11 @@ public class PlayerSkillInfo  {
 		clientInfo = null;
 	}
 	
+	//
+	// TODO: reset client player on death (and propagate change to active
+	// effects)
+	// it seems like the player entity changes after death
+	// (possibly on server too?)
+	//
 	
 }

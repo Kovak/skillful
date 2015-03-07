@@ -1,20 +1,28 @@
 package net.asrex.skillful;
 
+import java.util.LinkedList;
+import java.util.List;
 import net.asrex.skillful.effect.Ability;
 import net.asrex.skillful.effect.AbilityDefinition;
 import net.asrex.skillful.effect.Effect;
 import net.asrex.skillful.effect.EffectDefinition;
+import net.asrex.skillful.effect.PublicEffect;
 import net.asrex.skillful.event.SkillfulEffectToggledEvent;
 import net.asrex.skillful.exception.EffectActivationException;
 import net.asrex.skillful.exception.PerkActivationException;
 import net.asrex.skillful.message.client.EffectToggleMessage;
+import net.asrex.skillful.message.client.PublicSkillInfoMessage;
+import net.asrex.skillful.message.client.ResetPlayerMessage;
 import net.asrex.skillful.message.client.SkillInfoMessage;
 import net.asrex.skillful.perk.Perk;
 import net.asrex.skillful.perk.PerkRegistry;
+import net.asrex.skillful.requirement.Requirement;
 import net.asrex.skillful.ui.PerkUIData;
+import net.asrex.skillful.util.PlayerUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 
 /**
@@ -120,8 +128,13 @@ public class PlayerNetworkHelper {
 		}
 		
 		// toggle on the server
-		e.toggle(state);
-		
+		// public effects are toggled in PublicPlayerSkillInfo even if they are
+		// for the current player
+		// (via the updatePublicSkillInfo() call and subsequent NBT update)
+		if (!(e instanceof PublicEffect)) {
+			e.toggle(state);
+		}
+
 		// note: this will dispatch multiple events if called multiple times
 		// for the same state, while toggle() would have no effect
 		MinecraftForge.EVENT_BUS.post(SkillfulEffectToggledEvent.builder()
@@ -130,15 +143,37 @@ public class PlayerNetworkHelper {
 				.effect(e)
 				.enabled(state)
 				.build());
-		
-		// also toggle on the client - see EffectToggleHandler
-		EffectToggleMessage m = EffectToggleMessage.builder()
-				.activated(state)
-				.effect(effectName)
-				.perk(perkName)
-				.build();
-		
-		SkillfulMod.CHANNEL.sendTo(m, (EntityPlayerMP) player);
+
+		if (e instanceof PublicEffect) {
+			// if a public effect, update the public info and inform other
+			// players
+			// the updated public info will also be sent to the client, which
+			// will activate the effect, so an EffectToggleMessage does not need
+			// to be sent
+			
+			if (state) {
+				PublicEffect publicEffect = (PublicEffect) e;
+				info.getPublicSkillInfo().addPublicEffect(publicEffect);
+			} else {
+				info.getPublicSkillInfo().removePublicEffect(
+						perkName, effectName);
+			}
+			
+			// this will cause both server-side and client-side updates
+			// unlike normal effects, this will cause them to be immediately
+			// enabled on both sides
+			updatePublicSkillInfo(player);
+		} else {
+			// for normal effects, also toggle on the client - see
+			// EffectToggleHandler
+			EffectToggleMessage m = EffectToggleMessage.builder()
+					.activated(state)
+					.effect(effectName)
+					.perk(perkName)
+					.build();
+
+			SkillfulMod.CHANNEL.sendTo(m, (EntityPlayerMP) player);
+		}
 	}
 	
 	/**
@@ -353,6 +388,10 @@ public class PlayerNetworkHelper {
 					"Player does not have perk to toggle: " + perk);
 		}
 		
+
+		// set the "true" ticks existed - the client has to fudge it
+		perk.setLastActivatedTick(player.ticksExisted);
+		
 		String perkName = perk.getName();
 		for (EffectDefinition def : perk.getDefinition().getEffects()) {
 			String effectName = def.getName();
@@ -477,6 +516,13 @@ public class PlayerNetworkHelper {
 					perk.getCooldownTimeRemaining(player.ticksExisted)));
 		}
 		
+		for (Requirement req : perk.getDefinition().getRequirements()) {
+			if (!req.satisfied(player, info)) {
+				throw new PerkActivationException("Requirement not met: "
+						+ req.describe());
+			}
+		}
+		
 		togglePerk(player, perk, true);
 	}
 	
@@ -510,6 +556,157 @@ public class PlayerNetworkHelper {
 		}
 		
 		togglePerk(player, perk, false);
+	}
+	
+	/**
+	 * Requests that the player's client resets their current player instance.
+	 * @param player the player to reset
+	 */
+	public static void resetClientPlayer(EntityPlayer player) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		EntityPlayer newPlayer = PlayerUtil.getPlayer(
+				player.getGameProfile().getId());
+		
+		// reset on server
+		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
+		info.resetPlayer(newPlayer);
+		
+		// reset on client
+		SkillfulMod.CHANNEL.sendTo(
+				new ResetPlayerMessage(),
+				(EntityPlayerMP) newPlayer);
+	}
+	
+	/**
+	 * Updates the public skill info for the given player. The updated info will
+	 * first be pushed to all other server-side players, potentially activating
+	 * or deactivating public effects. Additionally, a
+	 * {@link PublicSkillInfoMessage} will be dispatched to all players in the
+	 * dimension to activate or deactivate any client-side effects.
+	 * @param player the player to update
+	 */
+	public static void updatePublicSkillInfo(EntityPlayer player) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
+		
+		NBTTagCompound tag = new NBTTagCompound();
+		info.getPublicSkillInfo().writeNBT(tag);
+		
+		// push the new NBT to all other server-side players
+		// this will cause activation/deactivation of added/removed effects
+		
+		// note that the player's own info will get updated with itself
+		// this slightly simplifies activation/deactivation since we dont' need
+		// to handle it separately
+		
+		for (PlayerSkillInfo otherInfo : PlayerSkillInfo.getAllInfo()) {
+			otherInfo.getOtherInfo(player).readNBT(tag);
+		}
+		
+		// push the new NBT to all clients in the dimension
+		PublicSkillInfoMessage m = new PublicSkillInfoMessage();
+		m.setInfo(player.getGameProfile().getId(), tag);
+		
+		SkillfulMod.CHANNEL.sendToDimension(m, player.dimension);
+	}
+	
+	/**
+	 * Removes the public info for the given player from all players in the
+	 * given dimension.
+	 * @param player the player to remove
+	 * @param dimension the dimension to update
+	 */
+	public static void removePublicSkillInfo(EntityPlayer player, int dimension) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		// TODO: remove on server as well?
+		// updateSkillInfo() currently assumes that all players know about all
+		// other players (on the server)
+		
+		PublicSkillInfoMessage message = new PublicSkillInfoMessage();
+		message.addRemovedId(player.getGameProfile().getId());
+		
+		SkillfulMod.CHANNEL.sendToDimension(message, dimension);
+	}
+	
+	/**
+	 * Sends all relevant public skill information to the given player's client.
+	 * This will send a {@link PublicSkillInfoMessage} to the player.
+	 * @param player the player to update
+	 */
+	public static void synchronizePublicInfo(EntityPlayer player) {
+		if (player.worldObj.isRemote) {
+			throw new IllegalStateException("This method may not be called"
+					+ " from a client context.");
+		}
+		
+		PublicSkillInfoMessage message = new PublicSkillInfoMessage();
+		message.setResync(true);
+		
+		List<EntityPlayer> players = MinecraftServer.getServer()
+				.getConfigurationManager()
+				.playerEntityList;
+		
+		// append each player's public info to the message
+		
+		for (EntityPlayer otherPlayer : players) {
+			// filter for same dimension as requesting player
+			// they'll be ignored anyway since the client won't know about other
+			// players, so we might as well save some bandwidth
+			if (player.dimension != otherPlayer.dimension) {
+				continue;
+			}
+			
+			NBTTagCompound tag = new NBTTagCompound();
+			PlayerSkillInfo.getInfo(otherPlayer)
+					.getPublicSkillInfo()
+					.writeNBT(tag);
+
+			message.setInfo(otherPlayer.getGameProfile().getId(), tag);
+		}
+		
+		SkillfulMod.CHANNEL.sendTo(message, (EntityPlayerMP) player);
+	}
+	
+	/**
+	 * Synchronizes public info for all players in the given dimension.
+	 * @param dimension the dimension id to synchronize
+	 */
+	public static void synchronizePublicInfo(int dimension) {
+		List<EntityPlayer> players = MinecraftServer.getServer()
+				.getConfigurationManager()
+				.playerEntityList;
+		
+		PublicSkillInfoMessage message = new PublicSkillInfoMessage();
+		message.setResync(true);
+		
+		// append each player's public info to the message
+		
+		for (EntityPlayer player : players) {
+			if (player.dimension != dimension) {
+				continue;
+			}
+			
+			NBTTagCompound tag = new NBTTagCompound();
+			PlayerSkillInfo.getInfo(player)
+					.getPublicSkillInfo()
+					.writeNBT(tag);
+
+			message.setInfo(player.getGameProfile().getId(), tag);
+		}
+		
+		SkillfulMod.CHANNEL.sendToDimension(message, dimension);
 	}
 	
 }

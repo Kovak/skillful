@@ -87,6 +87,11 @@ public class SkillRegistry {
 				new FileReader(new File(configDir, path)),
 				SkillConfig.class);
 		
+		if (conf == null) {
+			log.warn("Skill config '{}' was empty, ignoring...", path);
+			return;
+		}
+		
 		for (SkillDefinition def : conf.skills) {
 			if (r.skillDefinitions.containsKey(def.getName())) {
 				log.warn("A skill with name \"{}\" has been defined multiple "

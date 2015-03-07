@@ -142,8 +142,10 @@ public class ActionBar extends Gui implements PerkUI {
 		if (Keyboard.isKeyDown(modifierKey.getKeyCode())) {
 			if (event.dwheel > 0) {
 				moveSelected(-1);
+				event.setCanceled(true);
 			} else if (event.dwheel < 0) {
 				moveSelected(1);
+				event.setCanceled(true);
 			}
 		}
 	}
@@ -229,15 +231,6 @@ public class ActionBar extends Gui implements PerkUI {
 			}
 		}
 		
-		// draw selected, if applicable
-		if (selected >= 0 && selected < def.getSize()) {
-			drawTexture(
-					posX[selected], posY[selected],
-					def.getSelectedTexture());
-		}
-		
-		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		
 		// second pass: render textures for perks
 		for (Entry<Integer, Perk> entry : perks.entrySet()) {
 			PerkDefinition perk = entry.getValue().getDefinition();
@@ -263,16 +256,31 @@ public class ActionBar extends Gui implements PerkUI {
 					tex);
 		}
 		
+		// draw selected, if applicable
+		this.mc.renderEngine.bindTexture(barTextureResource);
+		if (selected >= 0 && selected < def.getSize()) {
+			drawTexture(
+					posX[selected], posY[selected],
+					def.getSelectedTexture());
+		}
+		
 		// third pass: draw status overlays
 		PlayerSkillInfo info = PlayerSkillInfo.getClientInfo();
+		if (info == null) {
+			// player info not yet initialized?
+			GL11.glDisable(GL11.GL_BLEND);
+			return;
+		}
+		
 		for (Entry<Integer, Perk> entry : perks.entrySet()) {
-			PerkDefinition perk = entry.getValue().getDefinition();
+			Perk perk = entry.getValue();
+			PerkDefinition perkDef = perk.getDefinition();
 			
 			int px = posX[entry.getKey()];
 			int py = posY[entry.getKey()];
 			
 			// draw active effect?
-			if (info.hasActiveEffects(perk.getName())) {
+			if (info.hasActiveEffects(perkDef.getName())) {
 				mc.renderEngine.bindTexture(
 						def.getActiveTexture().getResource());
 				
@@ -280,6 +288,21 @@ public class ActionBar extends Gui implements PerkUI {
 						px + def.getIconOffsetX(),
 						py + def.getIconOffsetY(),
 						def.getActiveTexture());
+			}
+			
+			// draw cooldown?
+			int currentTick = info.getPlayer().ticksExisted;
+			float ticksRemaining = perk.getCooldownTicksRemaining(currentTick)
+					- event.partialTicks;
+			if (ticksRemaining > 0) {
+				float ratio = ticksRemaining / perkDef.getCooldownTicks();
+				int height = (int) (def.getIconSize() * ratio);
+				
+				drawTexture(
+						px + def.getIconOffsetX(),
+						py + def.getIconOffsetY(),
+						height,
+						def.getCooldownTexture());
 			}
 		}
 		
@@ -314,6 +337,18 @@ public class ActionBar extends Gui implements PerkUI {
 				x + tex.offsetX + relX, y + tex.offsetY + relY,
 				tex.x, tex.y,
 				tex.width, tex.height);
+	}
+	
+	private void drawTexture(int x, int y, int height, TexturePosition tex) {
+		if (tex.getTexture() != null) {
+			mc.renderEngine.bindTexture(tex.getResource());
+		}
+		
+		GL11.glColor4f(tex.red, tex.green, tex.blue, tex.alpha);
+		drawTexturedModalRect(
+				x + tex.offsetX + relX, y + tex.offsetY + relY,
+				tex.x, tex.y,
+				tex.width, height);
 	}
 	
 	/**

@@ -23,15 +23,13 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Cancelable
 public class SkillfulProgressEvent extends PlayerEvent {
 	
 	private final PlayerSkillInfo info;
 	private final Skill skill;
 	private final int progressAmount;
 
-	@Builder
-	public SkillfulProgressEvent(
+	private SkillfulProgressEvent(
 			EntityPlayer player, PlayerSkillInfo info,
 			Skill skill, int progressAmount) {
 		super(player);
@@ -39,6 +37,29 @@ public class SkillfulProgressEvent extends PlayerEvent {
 		this.info = info;
 		this.skill = skill;
 		this.progressAmount = progressAmount;
+	}
+	
+	@Cancelable
+	public static class Pre extends SkillfulProgressEvent {
+
+		@Builder
+		public Pre(
+				EntityPlayer player, PlayerSkillInfo info,
+				Skill skill, int progressAmount) {
+			super(player, info, skill, progressAmount);
+		}
+		
+	}
+	
+	public static class Post extends SkillfulProgressEvent {
+
+		@Builder
+		public Post(
+				EntityPlayer player, PlayerSkillInfo info,
+				Skill skill, int progressAmount) {
+			super(player, info, skill, progressAmount);
+		}
+		
 	}
 	
 }
