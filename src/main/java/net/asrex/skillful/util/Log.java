@@ -1,6 +1,6 @@
 package net.asrex.skillful.util;
 
-import cpw.mods.fml.common.FMLLog;
+import net.minecraftforge.fml.common.FMLLog;
 import java.util.logging.Logger;
 
 public class Log {

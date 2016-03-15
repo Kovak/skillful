@@ -1,6 +1,6 @@
 package net.asrex.skillful.effect.food;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.LinkedList;
 import java.util.List;
 import net.asrex.skillful.effect.Effect;

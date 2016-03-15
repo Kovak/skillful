@@ -5,7 +5,7 @@ package net.asrex.skillful.skill.scaling;
  * points for a particular skill level.
  */
 public interface ScalingStrategy {
-	
+
 	public int getProgressForLevel(int level);
 	
 }

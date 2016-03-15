@@ -1,6 +1,6 @@
 package net.asrex.skillful.event;
 
-import cpw.mods.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.asrex.skillful.message.server.PerkActivateMessage;

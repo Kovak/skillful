@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class ExponentialScaling implements ScalingStrategy {
-
+	private int value;
 	private float base;
 	private float baseCoef;
 	private float expCoef;

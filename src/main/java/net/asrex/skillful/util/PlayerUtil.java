@@ -1,7 +1,8 @@
 package net.asrex.skillful.util;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
@@ -13,12 +14,12 @@ import net.minecraft.server.MinecraftServer;
  */
 public class PlayerUtil {
 	
-	public static EntityPlayer getPlayer(UUID id) {
-		List<EntityPlayer> players = MinecraftServer.getServer()
+	public static EntityPlayerMP getPlayer(UUID id) {
+		List<EntityPlayerMP> players = MinecraftServer.getServer()
 				.getConfigurationManager()
 				.playerEntityList;
 		
-		for (EntityPlayer player : players) {
+		for (EntityPlayerMP player : players) {
 			if (player.getGameProfile().getId().equals(id)) {
 				return player;
 			}

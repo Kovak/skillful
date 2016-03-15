@@ -1,7 +1,7 @@
 package net.asrex.skillful.ui;
 
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

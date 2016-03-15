@@ -20,6 +20,7 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import static net.minecraft.util.EnumChatFormatting.*;
 import net.minecraftforge.common.MinecraftForge;
@@ -119,7 +120,7 @@ public class PerkCommand extends CommandBase {
 	}
 	
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos bPos) {
 		if (args.length == 1) {
 			return filterStartsWith(actions, args[0]);
 		} else if (args.length == 2) {

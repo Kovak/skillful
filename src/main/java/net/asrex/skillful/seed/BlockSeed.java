@@ -1,6 +1,6 @@
 package net.asrex.skillful.seed;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.asrex.skillful.skill.SkillSeeder;
 import net.minecraft.block.Block;
 import net.minecraftforge.event.world.BlockEvent;
@@ -25,7 +25,7 @@ public class BlockSeed {
 		SkillSeeder.seed(
 				event.getPlayer(),
 				"block break "
-						+ Block.blockRegistry.getNameForObject(event.block));
+						+ Block.blockRegistry.getNameForObject(event.state.getBlock()));
 	}
 	
 	@SubscribeEvent
@@ -42,7 +42,7 @@ public class BlockSeed {
 		SkillSeeder.seed(
 				event.player,
 				"block place "
-						+ Block.blockRegistry.getNameForObject(event.block));
+						+ Block.blockRegistry.getNameForObject(event.state.getBlock()));
 	}
 	
 }

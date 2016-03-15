@@ -1,7 +1,7 @@
 package net.asrex.skillful.ui;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import lombok.Data;
 import net.minecraft.util.ResourceLocation;
 

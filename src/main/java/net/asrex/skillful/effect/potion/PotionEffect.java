@@ -1,9 +1,9 @@
 package net.asrex.skillful.effect.potion;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.asrex.skillful.effect.Effect;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -62,7 +62,7 @@ public class PotionEffect extends Effect {
 		
 		if (player.ticksExisted - lastRefreshTick > REFRESH_TICKS) {
 			player.addPotionEffect(new net.minecraft.potion.PotionEffect(
-					effectId, duration, amplifier, true));
+					effectId, duration, amplifier, true, true));
 			
 			lastRefreshTick = player.ticksExisted;
 		}

@@ -1,7 +1,7 @@
 package net.asrex.skillful.perk;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;

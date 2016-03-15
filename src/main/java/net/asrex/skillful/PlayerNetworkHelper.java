@@ -654,13 +654,13 @@ public class PlayerNetworkHelper {
 		PublicSkillInfoMessage message = new PublicSkillInfoMessage();
 		message.setResync(true);
 		
-		List<EntityPlayer> players = MinecraftServer.getServer()
+		List<EntityPlayerMP> players = MinecraftServer.getServer()
 				.getConfigurationManager()
 				.playerEntityList;
 		
 		// append each player's public info to the message
 		
-		for (EntityPlayer otherPlayer : players) {
+		for (EntityPlayerMP otherPlayer : players) {
 			// filter for same dimension as requesting player
 			// they'll be ignored anyway since the client won't know about other
 			// players, so we might as well save some bandwidth
@@ -684,7 +684,7 @@ public class PlayerNetworkHelper {
 	 * @param dimension the dimension id to synchronize
 	 */
 	public static void synchronizePublicInfo(int dimension) {
-		List<EntityPlayer> players = MinecraftServer.getServer()
+		List<EntityPlayerMP> players = MinecraftServer.getServer()
 				.getConfigurationManager()
 				.playerEntityList;
 		
@@ -693,7 +693,7 @@ public class PlayerNetworkHelper {
 		
 		// append each player's public info to the message
 		
-		for (EntityPlayer player : players) {
+		for (EntityPlayerMP player : players) {
 			if (player.dimension != dimension) {
 				continue;
 			}

@@ -1,8 +1,8 @@
 package net.asrex.skillful.ui;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.asrex.skillful.event.SkillfulClientPerkActivateErrorEvent;
 import net.asrex.skillful.event.SkillfulLevelUpEvent;
 import net.asrex.skillful.event.SkillfulPerkPurchaseEvent;

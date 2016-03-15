@@ -29,7 +29,7 @@ public class PotionAbility extends Ability {
 		}
 		
 		player.addPotionEffect(new net.minecraft.potion.PotionEffect(
-				effectId, duration, amplifier, true));
+				effectId, duration, amplifier, true, true));
 	}
 	
 }

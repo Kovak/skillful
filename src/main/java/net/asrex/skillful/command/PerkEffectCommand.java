@@ -14,6 +14,7 @@ import static net.asrex.skillful.util.TextUtil.slugify;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import static net.minecraft.util.EnumChatFormatting.*;
 
@@ -85,7 +86,7 @@ public class PerkEffectCommand extends CommandBase {
 	}
 	
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos bPos) {
 		if (args.length == 1) {
 			return filterStartsWith(perkSlugs, args[0]);
 		} else if (args.length == 2) {

@@ -1,6 +1,6 @@
 package net.asrex.skillful.event;
 
-import cpw.mods.fml.common.eventhandler.Cancelable;
+import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Builder;

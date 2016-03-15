@@ -1,6 +1,6 @@
 package net.asrex.skillful.effect;
 
-import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;

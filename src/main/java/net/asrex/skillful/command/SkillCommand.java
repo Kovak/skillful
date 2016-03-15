@@ -7,6 +7,7 @@ import net.asrex.skillful.skill.Skill;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 
 /**
@@ -60,7 +61,7 @@ public class SkillCommand extends CommandBase {
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos bPos) {
 		return null; // TODO
 	}
 

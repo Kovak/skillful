@@ -1,17 +1,17 @@
 package net.asrex.skillful;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import java.io.File;
 import java.io.IOException;
 import lombok.extern.log4j.Log4j2;
@@ -71,17 +71,17 @@ public class SkillfulMod {
 		MinecraftForge.EVENT_BUS.register(new CombatSeed());
 		
 		// FML events
-		FMLCommonHandler.instance().bus().register(new PlayerSkillManager());
-		FMLCommonHandler.instance().bus().register(new CraftingSeed());
-		FMLCommonHandler.instance().bus().register(new TimerSeed());
+		MinecraftForge.EVENT_BUS.register(new PlayerSkillManager());
+		MinecraftForge.EVENT_BUS.register(new CraftingSeed());
+		MinecraftForge.EVENT_BUS.register(new TimerSeed());
 		
 		InfoLifecycleManager ilm = new InfoLifecycleManager();
 		MinecraftForge.EVENT_BUS.register(ilm);
-		FMLCommonHandler.instance().bus().register(ilm);
+		MinecraftForge.EVENT_BUS.register(ilm);
 		
 		PublicInfoLifecycleManager pilm = new PublicInfoLifecycleManager();
 		MinecraftForge.EVENT_BUS.register(pilm);
-		FMLCommonHandler.instance().bus().register(pilm);
+		MinecraftForge.EVENT_BUS.register(pilm);
 		
 		// messages: server -> client
 		CHANNEL.registerMessage(
@@ -182,10 +182,9 @@ public class SkillfulMod {
 		//}
 		
 		for (String user : server.getAllUsernames()) {
-			// func_152612_a() -> getPlayerForUsername
 			EntityPlayerMP player = server
 					.getConfigurationManager()
-					.func_152612_a(user);
+					.getPlayerByUsername(user);
 			
 			PlayerSkillInfo info = PlayerSkillInfo.getInfo(player);
 			

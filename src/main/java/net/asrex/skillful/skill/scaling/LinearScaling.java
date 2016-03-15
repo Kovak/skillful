@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class LinearScaling implements ScalingStrategy {
-	
+	private int value;
 	private float base;
 	private float multiplier;
 	

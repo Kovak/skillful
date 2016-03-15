@@ -1,6 +1,6 @@
 package net.asrex.skillful.seed;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.asrex.skillful.skill.SkillSeeder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;

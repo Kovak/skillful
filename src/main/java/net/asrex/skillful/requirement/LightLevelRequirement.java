@@ -4,6 +4,7 @@ import lombok.Data;
 import net.asrex.skillful.PlayerSkillInfo;
 import net.asrex.skillful.util.Conditional;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 
 /**
  *
@@ -20,10 +21,10 @@ public class LightLevelRequirement implements Requirement {
 			return false;
 		}
 		
-		int light = player.worldObj.getBlockLightValue(
+		int light = player.worldObj.getLight(new BlockPos(
 				(int) player.posX,
 				(int) player.posY,
-				(int) player.posZ);
+				(int) player.posZ));
 		
 		return is.compare(light, level);
 	}
